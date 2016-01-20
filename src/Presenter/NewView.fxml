@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
 <?import javafx.scene.media.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="617.0" prefWidth="761.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Presenter.Controller">
+<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="600.0" minWidth="600.0" prefHeight="617.0" prefWidth="761.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Presenter.Controller">
    <children>
       <MenuBar fx:id="menuBar">
         <menus>
@@ -32,13 +33,27 @@
         </menus>
       </MenuBar>
       <TextField fx:id="sequenceField" />
-      <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS">
+      <SplitPane fx:id="vertSplitPane" dividerPositions="0.5638998682476943" VBox.vgrow="ALWAYS">
          <items>
+            <StackPane fx:id="structurePane" prefHeight="150.0" prefWidth="200.0">
+               <children>
+                  <Group fx:id="structureGroup" StackPane.alignment="CENTER">
+                     <children>
+                        <SubScene fx:id="subScene" depthTest="ENABLE" height="546.0" layoutX="-45.0" layoutY="-20.0" width="360.0">
+                          <root>
+                            <Region />
+                          </root>
+                        </SubScene>
+                        <PerspectiveCamera fx:id="camera" depthTest="ENABLE" farClip="1000.0" translateZ="-1000.0" />
+                     </children>
+                  </Group>
+               </children>
+            </StackPane>
             <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="566.0" prefWidth="233.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <TextArea fx:id="console" layoutX="102.0" layoutY="-15.0" prefHeight="143.0" prefWidth="377.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <TextArea fx:id="console" prefHeight="280.0" prefWidth="377.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
                   <Pane fx:id="secondaryStructure">
@@ -48,10 +63,6 @@
                   </Pane>
               </items>
             </SplitPane>
-            <Pane fx:id="structurePane">
-               <children>
-                  <Button fx:id="dummy" layoutX="136.0" layoutY="258.0" mnemonicParsing="false" onAction="#dummyAction" text="dumy" />
-               </children></Pane>
          </items>
       </SplitPane>
    </children>

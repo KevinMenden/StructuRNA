@@ -17,11 +17,13 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        Parent root = FXMLLoader.load(getClass().getResource("view.NewView.fxml"));
-
-        Scene scene = new Scene(root, 600, 600, true);
-        primaryStage.setTitle("StructuRNA");
-        primaryStage.setScene(scene);
+        Parent root = FXMLLoader.load(getClass().getResource("NewView.fxml"));
+        primaryStage.setTitle("Hello World");
+        primaryStage.setScene(new Scene(root, 600, 600));
         primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
