@@ -37,6 +37,12 @@ public class Presenter {
         this.pdbFile = new PDBFile(filePath);
     }
 
+
+
+    /**
+     * Use the given dotBracket notation to draw the secondary structure
+     * @param dotBracket
+     */
     public void buildSecondaryStructureGraph(String dotBracket){
         graphModel.parseNotation(dotBracket);
         double[][] embedding = SpringEmbedder.computeSpringEmbedding(10, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
