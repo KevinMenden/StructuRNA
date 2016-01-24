@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.media.*?>
 <?import javafx.scene.control.*?>
@@ -32,26 +33,21 @@
           </Menu>
         </menus>
       </MenuBar>
-      <TextField fx:id="sequenceField" />
+      <TextField fx:id="sequenceField" editable="false" />
       <SplitPane fx:id="vertSplitPane" dividerPositions="0.5638998682476943" VBox.vgrow="ALWAYS">
          <items>
-            <StackPane fx:id="structurePane" prefHeight="150.0" prefWidth="200.0">
-               <children>
-                  <Group fx:id="structureGroup" />
-               </children>
-            </StackPane>
+            <StackPane fx:id="structurePane" depthTest="ENABLE" opacity="0.7" pickOnBounds="false" prefHeight="553.0" prefWidth="416.0" style="-fx-background-color: black;" />
             <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="566.0" prefWidth="233.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <TextArea fx:id="console" editable="false" prefHeight="280.0" prefWidth="377.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <TextArea fx:id="console" editable="false" prefHeight="280.0" prefWidth="377.0" style="-fx-background-color: black;" text="Welcome to StructuRNA!" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <font>
+                              <Font name="Arial" size="12.0" />
+                           </font></TextArea>
                      </children>
                   </AnchorPane>
-                  <Pane fx:id="secondaryStructure">
-                     <children>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
-                     </children>
-                  </Pane>
+                  <Pane fx:id="secondaryStructure" opacity="0.7" style="-fx-background-color: black;" />
               </items>
             </SplitPane>
          </items>

@@ -1,31 +1,33 @@
 package Presenter;
 
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.DoubleProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Point3D;
 import javafx.scene.Group;
+
 import javafx.scene.PerspectiveCamera;
+import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Cylinder;
-import javafx.scene.transform.Rotate;
-import javafx.scene.transform.Translate;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Controller {
 
     /*
-    The Presenter instance that holds all models
+    The Presenter instances that hold all methods and models
      */
-    private Presenter presenter = new Presenter();
 
-    private Presenter3D presenter3D = new Presenter3D();
+    private Presenter presenter;// = new Presenter();
+    private Presenter2D presenter2D;
+    private Presenter3D presenter3D;// = new Presenter3D();
 
     @FXML
     private MenuItem colorNucleotide;
@@ -57,6 +59,8 @@ public class Controller {
     @FXML
     private VBox root;
 
+    @FXML
+    private SplitPane vertSplitPane;
 
     @FXML
     private MenuItem close;
@@ -68,9 +72,6 @@ public class Controller {
     private Menu fileMenu;
 
     @FXML
-    private Group structureGroup;
-
-    @FXML
     private Pane secondaryStructure;
 
     /**
@@ -80,19 +81,38 @@ public class Controller {
     @FXML
     void openFile(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showOpenDialog(root.getScene().getWindow());
-        if (selectedFile.getAbsolutePath().endsWith(".pdb")) {
-            this.presenter.loadFile(selectedFile.getAbsolutePath());
-            console.setText(console.getText() + "\n> " + selectedFile.getAbsolutePath() + " loaded succesfully!");
-            //Set the Atom[] array in the Presenter3D Class
-            presenter3D.setAtoms(presenter.pdbFile.getAtoms());
-            presenter3D.makeMolecules();
-            structureGroup.getChildren().clear();
-            structureGroup.getChildren().addAll(presenter3D.structureGroup);
-        } else {
-            console.setText(console.getText() +"\n> " + "Selected file is not a .pdb file!");
+        try {
+            File selectedFile = fileChooser.showOpenDialog(root.getScene().getWindow());
+            //If file is .pdb file, load it
+            if (selectedFile.getAbsolutePath().endsWith(".pdb")) {
+                this.presenter.loadFile(selectedFile.getAbsolutePath());
+                this.presenter2D.setPdbFile(presenter.getPdbFile());
+                console.setText(console.getText() + "\n> " + selectedFile.getAbsolutePath() + " loaded succesfully!");
+
+                //Set the Atom[] array in the Presenter3D Class and extract sequence
+                presenter3D.setAtoms(presenter.getPdbFile().getAtoms());
+                sequenceField.setText(presenter.getPdbFile().sequence);
+
+                //Make the 3D structure
+                presenter3D.makeMolecules();
+                structurePane.getChildren().clear();
+                structurePane.getChildren().addAll(presenter3D.subScene);
+                //Bind scene to its pane
+                bindSceneToPane(presenter3D.subScene, vertSplitPane);
+
+                //Make the secondary structure
+                presenter2D.buildSecondaryStructureGraph();
+                secondaryStructure.getChildren().clear();
+                secondaryStructure.getChildren().add(presenter2D.getGraphGroup());
+            } else {
+                console.setText(console.getText() + "\n> " + "Selected file is not a .pdb file!");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            console.setText(console.getText() + "\n> Exception caught during file loading." );
         }
     }
+
 
 
 
@@ -104,16 +124,35 @@ public class Controller {
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
 
-        //Add Transforms to camera
-        structureGroup.getChildren().clear();
+        //Make Presenter instance
+        presenter = new Presenter();
 
-        //Testing Graph
-        secondaryStructure.getChildren().add(presenter.graphGroup);
-        presenter.buildSecondaryStructureGraph("...((...))......((...))......((...))......((...))...");
+        //Make Presenter2D instane
+        presenter2D = new Presenter2D();
 
-        Cylinder cylinder = new Cylinder(10, 200);
-        structureGroup.getChildren().addAll(cylinder);
+        //Make Presenter3D instance, set up action events for handling
+        //the 3D structure
+        presenter3D = new Presenter3D();
+        presenter3D.setStructurePane(structurePane);
+        presenter3D.setActionEvents();
 
+    }
+
+    /**
+     * Bind the widht and height of subScene to the splitPane
+     * using DoubleBindings and Properties
+     * @param subScene
+     * @param splitPane
+     */
+    private void bindSceneToPane(SubScene subScene, SplitPane splitPane){
+        subScene.widthProperty().bind(new DoubleBinding() {
+            @Override
+            protected double computeValue() {
+                return splitPane.getDividerPositions()[0];
+            }
+        }.multiply(splitPane.widthProperty()));
+
+        subScene.heightProperty().bind(splitPane.heightProperty());
     }
 
 

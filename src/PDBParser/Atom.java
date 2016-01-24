@@ -22,6 +22,9 @@ public class Atom {
     //Point3D of atom
     private Point3D point;
 
+    public Atom(){
+    }
+
     //Create Point3D from coordinates
     public void make3DPoint(){
         this.point = new Point3D(this.coordinates[0], this.coordinates[1], this.coordinates[2]);
@@ -50,6 +53,10 @@ public class Atom {
 
     public void setPoint(Point3D point) {
         this.point = point;
+        //Update the coordinates array
+        this.coordinates[0] = Float.parseFloat(Double.toString(point.getX()));
+        this.coordinates[1] = Float.parseFloat(Double.toString(point.getY()));
+        this.coordinates[2] = Float.parseFloat(Double.toString(point.getZ()));
     }
 
     public int getNumber() {
@@ -78,6 +85,7 @@ public class Atom {
 
     public void setCoordinates(float[] coordinates) {
         this.coordinates = coordinates;
+        make3DPoint();
     }
 
     public String getBase() {

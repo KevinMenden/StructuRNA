@@ -1,10 +1,8 @@
 package Presenter;
 
 import Model.Nucleotide;
-import Model2D.Bond;
-import Model2D.Graph;
-import Model2D.Node;
-import Model2D.SpringEmbedder;
+import Model2D.*;
+import PDBParser.PDBFile;
 import View.View;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -23,32 +21,40 @@ import javafx.util.Duration;
  */
 public class Presenter2D {
 
+    //pdbFile
+    private PDBFile pdbFile;
+    //Graph Model and Group for 2D representation
     private Graph graphModel = new Graph();
-
     private Group graphGroup = new Group();
 
-    private View view;
-
-    private String dotBracketNotation = "...(())...";
-
+    //Max and Min values to define the 2D representation
     private int X_MIN_2D = 50;
-    private int X_MAX_2D = 300;
+    private int X_MAX_2D = 200;
     private int Y_MIN_2D = 50;
-    private int Y_MAX_2D = 300;
+    private int Y_MAX_2D = 200;
 
-    public Presenter2D(View view, Group graphGroup){
-        this.graphGroup = graphGroup;
-        this.view = view;
-        makeGraph();
+
+    public Presenter2D(){}
+    //Set te pdb file
+    public void setPdbFile(PDBFile pdbFile) {
+        this.pdbFile = pdbFile;
+    }
+    //Get the graph Structure
+    public Group getGraphGroup() {
+        graphGroup.setOpacity(1.0);
+        return graphGroup;
     }
 
-    private void makeGraph(){
-        this.graphModel.parseNotation(dotBracketNotation);
-        double embedding[][] = SpringEmbedder.computeSpringEmbedding(10, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
-        SpringEmbedder.centerCoordinates(embedding, X_MIN_2D, X_MAX_2D, Y_MIN_2D, Y_MAX_2D);
+    /**
+     * Use the given dotBracket notation to draw the secondary structure
+     */
+    public void buildSecondaryStructureGraph(){
+        Nussinov nussinov = new Nussinov(pdbFile.sequence);
+        nussinov.apply();
+        graphModel.parseNotation(nussinov.getBracketNotation());
+        double[][] embedding = SpringEmbedder.computeSpringEmbedding(10, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
+        SpringEmbedder.centerCoordinates(embedding, 50, 200, 50, 200);
         graphGroup.getChildren().clear();
-        //double initalCoordinates[][] = setCoordniatesOnCircle(this.graphModel.getNumberOfNodes());
-        //drawGraphAnimated(initalCoordinates, embedding, this.graphModel.getEdges(), this.graphModel.getNumberOfNodes(), this.graphModel.getNumberOfEdges());
         drawGraph(embedding, this.graphModel.getEdges(), this.graphModel.getNumberOfNodes(), this.graphModel.getNumberOfEdges());
     }
 
@@ -58,13 +64,12 @@ public class Presenter2D {
      * @param edges
      */
     private void drawGraph(double[][] embedding, int[][] edges, int numberOfNodes, int numberOfEdges) {
-        //Get the sequence from the sequenceField
-        this.graphModel.setSequence(view.sequenceField.getText());
-        this.graphModel.parseNotation(dotBracketNotation);
+
         //draw the nodes and add tooltips for every node
         int index = 0;
         Node[] nodes = new Node[numberOfNodes];
         for (double[] point : embedding) {
+            this.graphModel.setSequence(pdbFile.sequence);
             Nucleotide nucleotide = new Nucleotide(this.graphModel.getSequence().charAt(index));
             Node node = new Node(point[0],point[1],5, nucleotide);
             StringBuilder nuc = new StringBuilder();
@@ -92,14 +97,38 @@ public class Presenter2D {
 
         //Add edges
         for (Bond b : bonds){
-            this.view.graphGroup.getChildren().add(b);
+            this.graphGroup.getChildren().add(b);
         }
         //Add nodes
         for (Node n : nodes) {
-            this.view.graphGroup.getChildren().add(n);
+            this.graphGroup.getChildren().add(n);
         }
 
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * draw a graph in animated style
@@ -154,11 +183,11 @@ public class Presenter2D {
 
         //Add edges
         for (Bond b : bonds){
-            this.view.graphGroup.getChildren().add(b);
+            this.graphGroup.getChildren().add(b);
         }
         //Add nodes
         for (Node n : nodes) {
-            this.view.graphGroup.getChildren().add(n);
+            this.graphGroup.getChildren().add(n);
         }
 
 

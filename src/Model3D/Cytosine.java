@@ -10,8 +10,8 @@ import javafx.scene.paint.PhongMaterial;
 public class Cytosine extends Pyrimidine {
 
     private PhongMaterial cytosineMaterial = new PhongMaterial();
-    private Color diffuseColor = Color.BLUE;
-    private Color specularColor = Color.DARKBLUE;
+    private Color diffuseColor = Color.TURQUOISE;
+    private Color specularColor = Color.BLUE;
 
     public Cytosine(){
         super();

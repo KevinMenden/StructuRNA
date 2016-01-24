@@ -9,8 +9,8 @@ import javafx.scene.paint.PhongMaterial;
 public class Uracil extends Pyrimidine {
 
     private PhongMaterial uracilMaterial = new PhongMaterial();
-    private Color diffuseColor = Color.GREEN;
-    private Color specularColor = Color.DARKGREEN;
+    private Color diffuseColor = Color.LIGHTGREEN;
+    private Color specularColor = Color.GREEN;
 
     public Uracil(){
         super();

@@ -30,19 +30,19 @@ public class Node extends Circle {
         switch (n) {
             case 'a':
             case 'A':
-                color = Color.BLUE;
+                color = Color.RED;
                 break;
             case 'u':
             case 'U':
-                color = Color.GREEN;
+                color = Color.LIGHTGREEN;
                 break;
             case 'g':
             case 'G':
-                color = Color.DARKMAGENTA;
+                color = Color.YELLOW;
                 break;
             case 'c':
             case 'C':
-                color = Color.DARKTURQUOISE;
+                color = Color.TURQUOISE;
                 break;
         }
         return color;

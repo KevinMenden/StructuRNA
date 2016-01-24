@@ -21,12 +21,16 @@ public class PDBFile {
     //Number of atoms in PDB file
     private int numberOfAtoms;
 
+    //Sequence of the RNA Structure
+    public String sequence = "";
+
     //Create instance of PDB file with correctly sized atoms array
     public PDBFile(String filePath) {
         this.filePath = filePath;
         this.numberOfAtoms = getAtomNumber();
         this.atoms = new Atom[this.numberOfAtoms];
         readFile();
+        initializeTheSeqeunce();
     }
 
     /**
@@ -95,6 +99,25 @@ public class PDBFile {
             e.printStackTrace();
         }
     }
+
+    /*
+    Get the RNA sequence of the molecule
+     */
+    private void initializeTheSeqeunce(){
+        int residueNumber = atoms[0].getResidueNumber();
+        StringBuilder sequenceBuilder = new StringBuilder();
+        sequenceBuilder.append(atoms[0].getBase());
+
+        for (Atom atom : atoms){
+            if (atom.getResidueNumber() > residueNumber){
+                sequenceBuilder.append(atom.getBase());
+            }
+            residueNumber = atom.getResidueNumber();
+
+        }
+        this.sequence = sequenceBuilder.toString();
+    }
+
 
     /*
     GETTER & SETTER

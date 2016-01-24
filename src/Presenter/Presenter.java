@@ -1,10 +1,7 @@
 package Presenter;
 
 import Model.Nucleotide;
-import Model2D.Bond;
-import Model2D.Graph;
-import Model2D.Node;
-import Model2D.SpringEmbedder;
+import Model2D.*;
 import PDBParser.PDBFile;
 import javafx.scene.Group;
 import javafx.scene.control.Tooltip;
@@ -19,7 +16,7 @@ import javafx.scene.paint.Color;
 public class Presenter {
 
     //The PDBFile that is currently loaded
-    public PDBFile pdbFile = null;
+    private PDBFile pdbFile;
 
     //The Group that contains the 3D structure
     public Group structureGroup = new Group();
@@ -36,15 +33,22 @@ public class Presenter {
     public void loadFile(String filePath){
         this.pdbFile = new PDBFile(filePath);
     }
-
-
+    //Getter for pdbFile
+    public PDBFile getPdbFile() {
+        return pdbFile;
+    }
+    //Setter for pdbFile
+    public void setPdbFile(PDBFile pdbFile) {
+        this.pdbFile = pdbFile;
+    }
 
     /**
      * Use the given dotBracket notation to draw the secondary structure
-     * @param dotBracket
      */
-    public void buildSecondaryStructureGraph(String dotBracket){
-        graphModel.parseNotation(dotBracket);
+    public void buildSecondaryStructureGraph(){
+        Nussinov nussinov = new Nussinov(pdbFile.sequence);
+        nussinov.apply();
+        graphModel.parseNotation(nussinov.getBracketNotation());
         double[][] embedding = SpringEmbedder.computeSpringEmbedding(10, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
         SpringEmbedder.centerCoordinates(embedding, 50, 200, 50, 200);
         graphGroup.getChildren().clear();
@@ -62,7 +66,7 @@ public class Presenter {
         int index = 0;
         Node[] nodes = new Node[numberOfNodes];
         for (double[] point : embedding) {
-            this.graphModel.setSequence("AAGTCGACTGACTGACTGACTGACTGACTGACTGACTGAAGTCGACTGACTGACTGACTGACTGACTGACTGACTGAAGTCGACTGACTGACTGACTGACTGACTGACTGACTG");
+            this.graphModel.setSequence(pdbFile.sequence);
             Nucleotide nucleotide = new Nucleotide(this.graphModel.getSequence().charAt(index));
             Node node = new Node(point[0],point[1],5, nucleotide);
             StringBuilder nuc = new StringBuilder();
