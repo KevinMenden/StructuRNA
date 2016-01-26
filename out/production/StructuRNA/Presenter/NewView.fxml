@@ -20,10 +20,10 @@
           </Menu>
           <Menu fx:id="editMenu" mnemonicParsing="false" text="Edit">
             <items>
-                  <MenuItem fx:id="colorNucleotide" mnemonicParsing="false" text="Color by Nucleotide" />
-                  <MenuItem fx:id="colorBasetype" mnemonicParsing="false" text="Color by Basetype" />
+                  <MenuItem fx:id="colorNucleotide" mnemonicParsing="false" onAction="#colorByNucleotide" text="Color by Nucleotide" />
+                  <MenuItem fx:id="colorBasetype" mnemonicParsing="false" onAction="#colorByBasetype" text="Color by Basetype" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-              <MenuItem mnemonicParsing="false" text="Delete" />
+              <MenuItem mnemonicParsing="false" onAction="#clear" text="Clear" />
             </items>
           </Menu>
           <Menu fx:id="helpMenu" mnemonicParsing="false" text="Help">
@@ -36,7 +36,7 @@
       <TextField fx:id="sequenceField" editable="false" />
       <SplitPane fx:id="vertSplitPane" dividerPositions="0.5638998682476943" VBox.vgrow="ALWAYS">
          <items>
-            <StackPane fx:id="structurePane" depthTest="ENABLE" opacity="0.7" pickOnBounds="false" prefHeight="553.0" prefWidth="416.0" style="-fx-background-color: black;" />
+            <StackPane fx:id="structurePane" depthTest="ENABLE" pickOnBounds="false" prefHeight="553.0" prefWidth="416.0" style="-fx-background-color: black;" />
             <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="566.0" prefWidth="233.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
@@ -47,7 +47,7 @@
                            </font></TextArea>
                      </children>
                   </AnchorPane>
-                  <Pane fx:id="secondaryStructure" opacity="0.7" style="-fx-background-color: black;" />
+                  <Pane fx:id="secondaryStructure" style="-fx-background-color: black;" />
               </items>
             </SplitPane>
          </items>

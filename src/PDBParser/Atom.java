@@ -1,6 +1,9 @@
 package PDBParser;
 
 import javafx.geometry.Point3D;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Sphere;
 
 /**
  * Created by kevin_000 on 14.12.2015.
@@ -57,6 +60,60 @@ public class Atom {
         this.coordinates[0] = Float.parseFloat(Double.toString(point.getX()));
         this.coordinates[1] = Float.parseFloat(Double.toString(point.getY()));
         this.coordinates[2] = Float.parseFloat(Double.toString(point.getZ()));
+    }
+
+    /**
+     * Return a sphere according to atom type
+     * @return Sphere
+     */
+    public Sphere getAtomSphere(){
+        Sphere atomSphere = new Sphere(0.12);
+        atomSphere.setTranslateX(this.coordinates[0]);
+        atomSphere.setTranslateY(this.coordinates[1]);
+        atomSphere.setTranslateZ(this.coordinates[2]);
+        PhongMaterial atomMaterial = new PhongMaterial();
+        atomSphere.setMaterial(atomMaterial);
+        switch (this.element){
+            case "H":
+                atomMaterial.setDiffuseColor(Color.WHITESMOKE); break;
+            case "O":
+                atomMaterial.setDiffuseColor(Color.RED); break;
+            case "N":
+                atomMaterial.setDiffuseColor(Color.BLUE); break;
+            case "P":
+                atomMaterial.setDiffuseColor(Color.BLACK); break;
+            case "C":
+                atomMaterial.setDiffuseColor(Color.GRAY); break;
+            default:break;
+        }
+
+        return atomSphere;
+    }
+
+    /**
+     * Check if this atom is part of the displayed structure
+     * @return boolean
+     */
+    public boolean isPartOfStructure(){
+        boolean bool = false;
+        switch (identity){
+            case "N1": bool = true; break;
+            case "C2": bool = true; break;
+            case "N3": bool = true; break;
+            case "C4": bool = true; break;
+            case "C5": bool = true; break;
+            case "C6": bool = true; break;
+            case "N7": bool = true; break;
+            case "C8": bool = true; break;
+            case "N9": bool = true; break;
+            case "C1'": bool = true; break;
+            case "C2'": bool = true; break;
+            case "C3'": bool = true; break;
+            case "C4'": bool = true; break;
+            case "O4'": bool = true; break;
+        }
+
+        return bool;
     }
 
     public int getNumber() {

@@ -1,5 +1,6 @@
 package Model2D;
 
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
 /**
@@ -9,11 +10,16 @@ public class Bond extends Line {
     private Node startNode;
     private Node endNode;
 
+    private int startNucleotide;
+    private int endNucleotide;
+
     public Bond(double startX, double startY, double endX, double endY, Node startNode, Node endNode) {
         super(startX, startY, endX, endY);
         this.startNode = startNode;
         this.endNode = endNode;
         bindStartAndEnd(startNode, endNode);
+        this.startNucleotide = startNode.getNucleotideNumber();
+        this.endNucleotide = endNode.getNucleotideNumber();
     }
 
     public Bond(double startX, double startY, double endX, double endY) {

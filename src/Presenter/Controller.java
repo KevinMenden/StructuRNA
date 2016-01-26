@@ -1,9 +1,13 @@
 package Presenter;
 
+import Model2D.Nussinov;
+import Model3D.HydrogonBonds;
+import Selection.SelectedText;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 
 import javafx.scene.PerspectiveCamera;
@@ -97,20 +101,64 @@ public class Controller {
                 presenter3D.makeMolecules();
                 structurePane.getChildren().clear();
                 structurePane.getChildren().addAll(presenter3D.subScene);
+                structurePane.setAlignment(presenter3D.subScene, Pos.CENTER);
                 //Bind scene to its pane
                 bindSceneToPane(presenter3D.subScene, vertSplitPane);
 
                 //Make the secondary structure
-                presenter2D.buildSecondaryStructureGraph();
-                secondaryStructure.getChildren().clear();
-                secondaryStructure.getChildren().add(presenter2D.getGraphGroup());
+                //Infer base pairing from PDB file
+                try {
+                    HydrogonBonds hydrogonBonds = new HydrogonBonds();
+                    hydrogonBonds.setSequence(presenter.getPdbFile().sequence);
+                    System.out.println(hydrogonBonds.inferHydrogenBonds(presenter.getPdbFile().getAtoms()));
+                    presenter2D.buildSecondaryStructureGraph(hydrogonBonds.inferHydrogenBonds(presenter.getPdbFile().getAtoms()));
+                    secondaryStructure.getChildren().clear();
+                    secondaryStructure.getChildren().add(presenter2D.getGraphGroup());
+                }catch (NullPointerException np){
+                    //If Problems with H bond inference occur, use Nussinov instead
+                    console.setText(console.getText() + "\n> " + " Could not infer secondary structure from PDB file. Using Nussinov-algorithm instead.");
+                    Nussinov nussinov = new Nussinov(presenter.getPdbFile().sequence);
+                    nussinov.apply();
+                    presenter2D.buildSecondaryStructureGraph(nussinov.getBracketNotation());
+                    secondaryStructure.getChildren().clear();
+                    secondaryStructure.getChildren().add(presenter2D.getGraphGroup());
+                }
             } else {
                 console.setText(console.getText() + "\n> " + "Selected file is not a .pdb file!");
             }
-        } catch (Exception e){
+
+        }catch (NullPointerException np){
+            console.setText(console.getText() + "\n> " + "No file selected.");
+        }
+        catch (Exception e){
             e.printStackTrace();
             console.setText(console.getText() + "\n> Exception caught during file loading." );
         }
+    }
+
+    //Color each nucleotide
+    @FXML
+    void colorByNucleotide(ActionEvent event) {
+        presenter3D.colorByNucleotide();
+        structurePane.getChildren().clear();
+        structurePane.getChildren().addAll(presenter3D.subScene);
+    }
+
+    //Color by basetype
+    @FXML
+    void colorByBasetype(ActionEvent event) {
+        presenter3D.colorByBasetype();
+        structurePane.getChildren().clear();
+        structurePane.getChildren().addAll(presenter3D.subScene);
+    }
+
+    //Delete the structure
+    @FXML
+    void clear(ActionEvent event) {
+        structurePane.getChildren().clear();
+        secondaryStructure.getChildren().clear();
+        console.setText(console.getText() + "\n> Structure deleted." );
+
     }
 
 
@@ -135,6 +183,9 @@ public class Controller {
         presenter3D = new Presenter3D();
         presenter3D.setStructurePane(structurePane);
         presenter3D.setActionEvents();
+
+        //Initialize Text selection class
+        SelectedText selectedText = new SelectedText(sequenceField);
 
     }
 

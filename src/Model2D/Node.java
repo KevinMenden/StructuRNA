@@ -9,6 +9,9 @@ import javafx.scene.shape.Circle;
  * Created by Kevin Menden on 25.11.2015.
  */
 public class Node extends Circle {
+
+    private int nucleotideNumber;
+
     private Nucleotide nucleotide;
 
     public Node(double centerX, double centerY, double radius) {
@@ -34,7 +37,7 @@ public class Node extends Circle {
                 break;
             case 'u':
             case 'U':
-                color = Color.LIGHTGREEN;
+                color = Color.GREEN;
                 break;
             case 'g':
             case 'G':
@@ -42,10 +45,20 @@ public class Node extends Circle {
                 break;
             case 'c':
             case 'C':
-                color = Color.TURQUOISE;
+                color = Color.BLUE;
                 break;
         }
         return color;
     }
 
+    /*
+    GETTER AND SETTER
+     */
+    public int getNucleotideNumber() {
+        return nucleotideNumber;
+    }
+
+    public void setNucleotideNumber(int nucleotideNumber) {
+        this.nucleotideNumber = nucleotideNumber;
+    }
 }

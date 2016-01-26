@@ -2,6 +2,7 @@ package Presenter;
 
 import Model.Nucleotide;
 import Model2D.*;
+import Model3D.HydrogonBonds;
 import PDBParser.PDBFile;
 import View.View;
 import javafx.animation.KeyFrame;
@@ -33,6 +34,10 @@ public class Presenter2D {
     private int Y_MIN_2D = 50;
     private int Y_MAX_2D = 200;
 
+    //Variables needed for mouse interactions
+    double originalNodeX, originalNodeY, originalMouseX, originalMouseY,
+            dragDeltaX, dragDeltaY;
+
 
     public Presenter2D(){}
     //Set te pdb file
@@ -48,13 +53,26 @@ public class Presenter2D {
     /**
      * Use the given dotBracket notation to draw the secondary structure
      */
-    public void buildSecondaryStructureGraph(){
+    public void buildSecondaryStructureGraph(String dotBracket){
+        //Parse the dot bracket notation
+        graphModel.parseNotation(dotBracket);
+
+        //Calculate the 2D structure with Nussinov
         Nussinov nussinov = new Nussinov(pdbFile.sequence);
         nussinov.apply();
-        graphModel.parseNotation(nussinov.getBracketNotation());
-        double[][] embedding = SpringEmbedder.computeSpringEmbedding(10, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
-        SpringEmbedder.centerCoordinates(embedding, 50, 200, 50, 200);
+        graphModel.parseNotation(dotBracket);
+
+        //Clear the graph group
         graphGroup.getChildren().clear();
+
+        //Make embedding
+        double[][] embedding = SpringEmbedder.computeSpringEmbedding(10, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
+        SpringEmbedder.centerCoordinates(embedding, X_MIN_2D, X_MAX_2D, Y_MIN_2D, Y_MAX_2D);
+        //Make initial coordinates
+        double[][] initialCoordinates = setCoordniatesOnCircle(this.graphModel.getNumberOfNodes());
+        SpringEmbedder.centerCoordinates(initialCoordinates, X_MIN_2D, X_MAX_2D, Y_MIN_2D, Y_MAX_2D);
+
+        //drawGraphAnimated(initialCoordinates, embedding, this.graphModel.getEdges(), this.graphModel.getNumberOfNodes(), this.graphModel.getNumberOfEdges());
         drawGraph(embedding, this.graphModel.getEdges(), this.graphModel.getNumberOfNodes(), this.graphModel.getNumberOfEdges());
     }
 
@@ -72,6 +90,7 @@ public class Presenter2D {
             this.graphModel.setSequence(pdbFile.sequence);
             Nucleotide nucleotide = new Nucleotide(this.graphModel.getSequence().charAt(index));
             Node node = new Node(point[0],point[1],5, nucleotide);
+            node.setNucleotideNumber(index);
             StringBuilder nuc = new StringBuilder();
             nuc.append(nucleotide.getNucleotide());
             Tooltip tip = new Tooltip(nuc.toString() + " #" + Integer.toString(index+1));
@@ -88,6 +107,7 @@ public class Presenter2D {
             double x2 = embedding[edge[1]][0];
             double y2 = embedding[edge[1]][1];
             Bond bond = new Bond(x1, y1, x2, y2, nodes[edge[0]], nodes[edge[1]]);
+            bond.setStroke(Color.LIGHTGOLDENRODYELLOW);
             if (counter>=numberOfNodes) {
                 bond.setStroke(Color.DARKRED);
             }
@@ -102,6 +122,45 @@ public class Presenter2D {
         //Add nodes
         for (Node n : nodes) {
             this.graphGroup.getChildren().add(n);
+        }
+
+        //Allow dragging - IMPACTS SCENE STRUCTURE ??
+        //setDragNode(nodes);
+
+    }
+
+    /**
+     * Allow dragging of Nodes on the 2D graph
+     * @param nodes
+     */
+    private void setDragNode(Circle[] nodes) {
+
+        for (Circle node : nodes) {
+            node.setOnMousePressed(event -> {
+                originalNodeX = node.getCenterX();
+                originalNodeY = node.getCenterY();
+                originalMouseX = event.getSceneX();
+                originalMouseY = event.getSceneY();
+                dragDeltaX = originalNodeX - originalMouseX;
+                dragDeltaY = originalNodeY - originalMouseY;
+            });
+
+            node.setOnMouseDragged(event -> {
+                node.setCenterX(event.getSceneX() + dragDeltaX);
+                node.setCenterY(event.getSceneY() + dragDeltaY);
+                node.setCursor(Cursor.CLOSED_HAND);
+            });
+
+            node.setOnMouseEntered(event -> node.setCursor(Cursor.HAND));
+            node.setOnMouseReleased(event -> {
+                node.setCursor(Cursor.HAND);
+                KeyFrame keyFrame = new KeyFrame(Duration.millis(500),
+                        new KeyValue(node.centerXProperty(), originalNodeX),
+                        new KeyValue(node.centerYProperty(), originalNodeY)
+                );
+                Timeline tl = new Timeline(keyFrame);
+                tl.play();
+            });
         }
 
     }
@@ -142,7 +201,9 @@ public class Presenter2D {
         //draw initial points with tooltips
         Node[] nodes = new Node[numberOfNodes];
         Node[] endNodes = new Node[numberOfNodes];
+        this.graphModel.setSequence(pdbFile.sequence);
         int index = 0;
+        //Make nodes with initialCoordinates
         for (double[] point : initialCoordinates) {
             Nucleotide nucleotide = new Nucleotide(this.graphModel.getSequence().charAt(index));
             Node node = new Node(point[0],point[1],5, nucleotide);
@@ -190,18 +251,14 @@ public class Presenter2D {
             this.graphGroup.getChildren().add(n);
         }
 
-
-
-        //Enable node-dragging - NOT IN THIS PROGRAM
-        //setDragNode(nodes);
+        //Enabled dragging of nodes
+        setDragNode(nodes);
 
         //Create Timeline with KeyFrame and KeyValues and play it
         KeyValue[] keysEnd = createEndKeyValues (numberOfNodes, nodes, endNodes);
         KeyFrame keyFrameEnd = new KeyFrame(Duration.millis(1000), keysEnd);
         Timeline timeline = new Timeline(keyFrameEnd);
         timeline.play();
-
-
     }
 
     /**

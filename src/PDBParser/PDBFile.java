@@ -76,17 +76,17 @@ public class PDBFile {
                 //String[] splitString = line.split("\\s+");
                 //If atom, save stuff
                 if (line.startsWith("ATOM")) {
-                    atom.setNumber(Integer.parseInt(line.substring(7, 11).replace(" ", "")));
-                    atom.setIdentity(line.substring(12, 16).replace(" ", ""));
-                    atom.setBase(line.substring(17,20).replace(" ",""));
-                    atom.setResidueNumber(Integer.parseInt(line.substring(23, 26).replace(" ","")));
+                    atom.setNumber(Integer.parseInt(line.substring(FileFormatConstants.NUMBER_START, FileFormatConstants.NUMBER_END).replace(" ", "")));
+                    atom.setIdentity(line.substring(FileFormatConstants.IDENTITY_START, FileFormatConstants.IDENTITY_END).replace(" ", ""));
+                    atom.setBase(line.substring(FileFormatConstants.BASE_START, FileFormatConstants.BASE_END).replace(" ",""));
+                    atom.setResidueNumber(Integer.parseInt(line.substring(FileFormatConstants.RESIDUE_NUMBER_START, FileFormatConstants.RESIDUE_NUMBER_END).replace(" ","")));
                     atom.setCoordinates(new float[] {
-                            Float.parseFloat(line.substring(30,38).replace(" ","")),
-                            Float.parseFloat(line.substring(38,46).replace(" ", "")),
-                            Float.parseFloat(line.substring(46, 54).replace(" ",""))
+                            Float.parseFloat(line.substring(FileFormatConstants.X_START,FileFormatConstants.X_END).replace(" ","")),
+                            Float.parseFloat(line.substring(FileFormatConstants.Y_START,FileFormatConstants.Y_END).replace(" ", "")),
+                            Float.parseFloat(line.substring(FileFormatConstants.Z_START, FileFormatConstants.Z_END).replace(" ",""))
                     });
                     atom.make3DPoint();
-                    atom.setElement(line.substring(77,78).replace(" ",""));
+                    atom.setElement(line.substring(FileFormatConstants.ELEMENT_START,FileFormatConstants.ELEMENT_END).replace(" ",""));
                     //Store atom in atom array
                     this.atoms[index] = atom;
                     index++;

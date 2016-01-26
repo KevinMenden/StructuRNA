@@ -81,7 +81,7 @@ public class Presenter3D {
         structureGroup.setTranslateY(subScene.getHeight()/4);
         //structureGroup.translateXProperty().bind(subScene.widthProperty().divide(2.));
         //structureGroup.translateYProperty().bind(subScene.heightProperty().divide(2.));
-        subScene.setFill(Color.WHITE);
+        subScene.setFill(Color.BLACK);
         camera = new PerspectiveCamera(true);
         camera.setFarClip(10000.0);
         camera.setNearClip(0.1);
@@ -106,17 +106,19 @@ public class Presenter3D {
             double dX = event.getSceneX() - mousePosX;
             //Zoom if shift is down
             if (event.isShiftDown()){
-                cameraTranslate.setZ(cameraTranslate.getZ() - dY);
+                cameraTranslate.setZ(cameraTranslate.getZ() -  dY);
                 //Move if alt is down
             } else if (event.isAltDown()) {
-                structureGroup.setLayoutX(structureGroup.getLayoutX() + 0.02 * dX);
-                structureGroup.setLayoutY(structureGroup.getLayoutY() + 0.02 * dY);
+                structureGroup.setTranslateX(structureGroup.getTranslateX() +  dX);
+                structureGroup.setTranslateY(structureGroup.getTranslateY() +  dY);
             }
             //Else rotate the camera around the object
             else{
-                cameraRotateY.setAngle(cameraRotateY.getAngle() + 0.1 * dX);
-                cameraRotateX.setAngle(cameraRotateX.getAngle() + 0.1 * dY);
+                cameraRotateY.setAngle(cameraRotateY.getAngle() -  dX);
+                cameraRotateX.setAngle(cameraRotateX.getAngle() +  dY);
             }
+            mousePosY = event.getSceneY();
+            mousePosX = event.getSceneX();
         });
     }
 
@@ -232,10 +234,6 @@ public class Presenter3D {
         //Center all atom coordinates
         centerAllAtoms(this.atoms);
 
-        //coordinates for programming....
-        System.out.println("Height: " + structureGroup.getTranslateY());
-        System.out.println("Width: " + structureGroup.getTranslateX());
-
         //Atom[] atoms = this.pdbFile.getAtoms();
         //Get rid of old stuff
         structureGroup.getChildren().clear();
@@ -290,6 +288,9 @@ public class Presenter3D {
         CREATE MESH VIEWS FOR ALL BASES AND SUGARS
          */
         for (Atom atom : atoms) {
+            //If Atom is part of the structure, make a Sphere representation and add it to the Structure group
+            if (atom.isPartOfStructure()) {structureGroup.getChildren().add(atom.getAtomSphere());}
+
             //Check if base has changed or if last element is reached
             //Add coordinates of each atom to the corresponding base
             if (atom.getResidueNumber() == resdiueNumber && (!atom.equals(atoms[atoms.length-1]))){
@@ -299,13 +300,12 @@ public class Presenter3D {
                 uracil.fillCoordinates(atom);
                 ribose.fillCoordinates(atom);
             } else{
-                //Make Mesh for ribose
-                ribose.makeMesh();
-                structureGroup.getChildren().add(ribose.getMeshView());
                 //Add the right base to the view if new base is reached
+                //Make Tooltips, set Materials
                 switch (currentBase){
                     case "C":
                         cytosine.setMaterial(cytosineMaterial);
+                        ribose.setMaterial(cytosineMaterial);
                         cytosine.makeMesh();
                         structureGroup.getChildren().add(cytosine.getMeshView());
                         ribose.makeTooltip(cytosine.getNucleotideInfo());
@@ -313,6 +313,7 @@ public class Presenter3D {
                         break;
                     case "G":
                         guanine.setMaterial(guanineMaterial);
+                        ribose.setMaterial(guanineMaterial);
                         guanine.makeMesh();
                         structureGroup.getChildren().add(guanine.getMeshView());
                         ribose.makeTooltip(guanine.getNucleotideInfo());
@@ -320,6 +321,7 @@ public class Presenter3D {
                         break;
                     case "U":
                         uracil.setMaterial(uracilMaterial);
+                        ribose.setMaterial(uracilMaterial);
                         uracil.makeMesh();
                         structureGroup.getChildren().add(uracil.getMeshView());
                         ribose.makeTooltip(uracil.getNucleotideInfo());
@@ -327,6 +329,7 @@ public class Presenter3D {
                         break;
                     case "A":
                         adenine.setMaterial(adenineMaterial);
+                        ribose.setMaterial(adenineMaterial);
                         adenine.makeMesh();
                         structureGroup.getChildren().add(adenine.getMeshView());
                         ribose.makeTooltip(adenine.getNucleotideInfo());
@@ -334,6 +337,9 @@ public class Presenter3D {
                         break;
                     default: break;
                 }
+                //Make Mesh for ribose
+                ribose.makeMesh();
+                structureGroup.getChildren().add(ribose.getMeshView());
                 //Update values and bases
                 ribose = new Ribose();
                 currentBase = atom.getBase();
@@ -367,7 +373,7 @@ public class Presenter3D {
         Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
 
         Cylinder line = new Cylinder(0.3, height);
-        line.setMaterial(new PhongMaterial(Color.BROWN));
+        line.setMaterial(new PhongMaterial(Color.LIGHTGOLDENRODYELLOW));
 
         line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
 
@@ -394,7 +400,7 @@ public class Presenter3D {
         Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
 
         Cylinder line = new Cylinder(0.1, height);
-        line.setMaterial(new PhongMaterial(Color.RED));
+        line.setMaterial(new PhongMaterial(Color.LIGHTCYAN));
 
         line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
 
@@ -501,6 +507,29 @@ Connect all Phosphates with the right sugars
             residueNumber = atom.getResidueNumber();
             residueType = atom.getBase();
         }
+    }
+
+    /*
+    Color all nucleotides differently and make the molecules again
+     */
+    public void colorByNucleotide(){
+        //Different colors for every nucleotide
+        uracilMaterial.setDiffuseColor(Color.GREEN);
+        adenineMaterial.setDiffuseColor(Color.RED);
+        cytosineMaterial.setDiffuseColor(Color.BLUE);
+        guanineMaterial.setDiffuseColor(Color.YELLOW);
+        makeMolecules();
+    }
+
+    /*
+    Color nucleotides by basetype (Purine - Pyrimidine)
+     */
+    public void colorByBasetype(){
+        uracilMaterial.setDiffuseColor(Color.BLUE);
+        adenineMaterial.setDiffuseColor(Color.YELLOW);
+        cytosineMaterial.setDiffuseColor(Color.BLUE);
+        guanineMaterial.setDiffuseColor(Color.YELLOW);
+        makeMolecules();
     }
 
 }
