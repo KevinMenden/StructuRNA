@@ -1,13 +1,10 @@
 package Presenter;
 
-import View.View;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.shape.Cylinder;
-import javafx.scene.shape.Sphere;
+import javafx.scene.SceneAntialiasing;
 import javafx.stage.Stage;
 
 /**
@@ -18,8 +15,8 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         Parent root = FXMLLoader.load(getClass().getResource("NewView.fxml"));
-        primaryStage.setTitle("StructuRNA - The best RNA visualization tool ever");
-        primaryStage.setScene(new Scene(root, 800, 600));
+        primaryStage.setTitle("StructuRNA");
+        primaryStage.setScene(new Scene(root, 800, 600,true, SceneAntialiasing.BALANCED));
         primaryStage.show();
     }
 

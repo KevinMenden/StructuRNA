@@ -1,68 +1,22 @@
-package Presenter;
+package Model3D;
 
-import Model3D.*;
 import PDBParser.Atom;
-import PDBParser.PDBFile;
-import View.View;
-import javafx.event.Event;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
-import javafx.scene.*;
+import javafx.scene.Group;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.Shape;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 
 import java.util.ArrayList;
 
 /**
- * Created by kevin_000 on 19.01.2016.
- * This Class contains methods for creating the 3D structure of the molecule
- * and to handle this structure
+ * Created by kevin_000 on 27.01.2016.
  */
-public class Presenter3D {
-
-    //SubScene
-    SubScene subScene;
-
-    //PerspectiveCamera
-    PerspectiveCamera camera;
-
-    //Mouse positions when mouse is pressed
-    double mousePosX, mousePosY;
-
-    //StackPane for 3D
-    public StackPane structurePane;
-    //Setter for strucutrePane
-    public void setStructurePane(StackPane structurePane) {
-        this.structurePane = structurePane;
-    }
-
-    //initial camer position (zooming)
-    private final double CAMERA_CENTER_Z = -200;
-
-    //Translatin and Rotations
-    public Rotate cameraRotateX = new Rotate(0, new Point3D(1, 0, 0));
-    public Rotate cameraRotateY = new Rotate(0, new Point3D(0, 1, 0));
-    public Translate cameraTranslate = new Translate(0, 0, CAMERA_CENTER_Z);
-
-    //The Group in with all the molecules
-    public Group structureGroup = new Group();
-    //MeshView group for all nucleotides
-    MeshView[] nucleotides;
-
-    //The atoms as loaded from the pdb file
-    private Atom[] atoms;
-    //Setter for atoms
-    public void setAtoms(Atom[] atoms) {
-        this.atoms = atoms;
-    }
+public class MoleculeAssembler {
 
     //Materials for different coloring of bases
     PhongMaterial uracilMaterial = new PhongMaterial(Color.GREEN);
@@ -70,142 +24,18 @@ public class Presenter3D {
     PhongMaterial cytosineMaterial = new PhongMaterial(Color.BLUE);
     PhongMaterial guanineMaterial = new PhongMaterial(Color.YELLOW);
 
-    public Presenter3D() {};
+    //The Group in with all the molecules
+    public Group structureGroup = new Group();
+    //MeshView group for all nucleotides
+    MeshView[] nucleotides;
 
-    /*
-    Set up all the action events for moving the 3D structure
-    Initialize the SubScene and set up the camera
-     */
-    public void setActionEvents(){
-
-        //Initialize SubScene and camera
-
-        subScene = new SubScene(structureGroup, 426, 553, true, SceneAntialiasing.BALANCED);
-        subScene.setFill(Color.BLACK);
-        camera = new PerspectiveCamera(true);
-        camera.setFarClip(10000.0);
-        camera.setNearClip(0.1);
-        //Add Transforms to stucture and camera
-        structureGroup.getTransforms().addAll(cameraRotateX, cameraRotateY);
-        camera.getTransforms().addAll(cameraTranslate);
-        subScene.setCamera(camera);
-
-        //Save position if mouse is pressed
-        structurePane.setOnMousePressed(event -> {
-            mousePosX = event.getSceneX();
-            mousePosY = event.getSceneY();
-        });
-
-        /*
-        Move camera if mouse is dragged (zooming or rotating)
-         */
-        structurePane.setOnMouseDragged(event -> {
-            double dY = event.getSceneY() - mousePosY;
-            double dX = event.getSceneX() - mousePosX;
-            //Zoom if shift is down
-            if (event.isShiftDown()){
-                cameraTranslate.setZ(cameraTranslate.getZ() -  dY);
-                //Move if alt is down
-            } else if (event.isAltDown()) {
-                structureGroup.setTranslateX(structureGroup.getTranslateX() +  0.1 * dX);
-                structureGroup.setTranslateY(structureGroup.getTranslateY() +  0.1 * dY);
-            }
-            //Else rotate the camera around the object
-            else{
-                cameraRotateY.setAngle(cameraRotateY.getAngle() -  dX);
-                cameraRotateX.setAngle(cameraRotateX.getAngle() +  dY);
-            }
-            mousePosY = event.getSceneY();
-            mousePosX = event.getSceneX();
-        });
+    //Array of all atoms
+    Atom[] atoms;
+    public Atom[] getAtoms() {
+        return atoms;
     }
-
-
-    /**
-     * Center Points around the middle
-     *important to for rotation
-     * @param points
-     */
-    public static ArrayList<Point3D> center(ArrayList<Point3D> points) {
-        ArrayList<Point3D> result=new ArrayList<>(points.size());
-        if (points.size() > 0) {
-            double[] center = {0, 0, 0};
-
-            for (Point3D point : points) {
-                center[0] += point.getX();
-                center[1] += point.getY();
-                center[2] += point.getZ();
-            }
-            center[0] /= points.size();
-            center[1] /= points.size();
-            center[2] /= points.size();
-
-            for (Point3D point : points) {
-                result.add(point.subtract(new Point3D(center[0], center[1], center[2])));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Apply center() for all elements of atoms
-     * @param atoms
-     */
-    private void centerAllAtoms(Atom[] atoms){
-        ArrayList<Point3D> points = new ArrayList<>(atoms.length);
-        //Add all points to the ArrayList
-        for (Atom atom : atoms){
-            points.add(atom.getPoint());
-        }
-        //Center the points
-        points = center(points);
-        int i = 0;
-        for (Point3D point3D : points){
-            atoms[i].setPoint(point3D);
-            i++;
-        }
-        //Update the Array of Atoms
-        //this.atoms = atoms;
-    }
-
-
-
-    /**
-     * Returns the size of a Nucleotide when given its type
-     * @param moleculeType
-     * @return
-     */
-        private int getMoleculeSize(String moleculeType){
-        int moleculeSize = 0;
-
-        switch (moleculeType){
-            case "C":
-                moleculeSize = 18;
-                break;
-            case "A":
-                moleculeSize = 27;
-                break;
-            case "U":
-                moleculeSize = 18;
-                break;
-            case "G":
-                moleculeSize = 27;
-                break;
-            case "T":
-                moleculeSize = 18;
-                break;
-            default:
-                System.out.println("Could not identify molecule type");
-                break;
-        }
-
-        return moleculeSize;
-    }
-
-    public void assembleMolecules(){
-        MoleculeAssembler moleculeAssembler = new MoleculeAssembler();
-        moleculeAssembler.setAtoms(atoms);
-        this.structureGroup = moleculeAssembler.makeMolecules();
+    public void setAtoms(Atom[] atoms) {
+        this.atoms = atoms;
     }
 
     /**
@@ -213,7 +43,7 @@ public class Presenter3D {
      * to the group
      * Returns the group with all molecules in it
      */
-    public void makeMolecules(){
+    public Group makeMolecules(){
         //Center all atom coordinates
         centerAllAtoms(this.atoms);
 
@@ -337,6 +167,7 @@ public class Presenter3D {
                 ribose.fillCoordinates(atom);
             }
         }
+        return structureGroup;
     }
 
     /**
@@ -504,6 +335,7 @@ Connect all Phosphates with the right sugars
         adenineMaterial.setDiffuseColor(Color.RED);
         cytosineMaterial.setDiffuseColor(Color.BLUE);
         guanineMaterial.setDiffuseColor(Color.YELLOW);
+        //makeMolecules();
     }
 
     /*
@@ -514,14 +346,48 @@ Connect all Phosphates with the right sugars
         adenineMaterial.setDiffuseColor(Color.YELLOW);
         cytosineMaterial.setDiffuseColor(Color.BLUE);
         guanineMaterial.setDiffuseColor(Color.YELLOW);
+        //makeMolecules();
     }
 
-    public void centerStructure(){
-        cameraTranslate.setZ(CAMERA_CENTER_Z);
-        cameraRotateX.setAngle(0);
-        cameraRotateY.setAngle(0);
-        structureGroup.setTranslateX(0);
-        structureGroup.setTranslateY(0);
+    public static ArrayList<Point3D> center(ArrayList<Point3D> points) {
+        ArrayList<Point3D> result=new ArrayList<>(points.size());
+        if (points.size() > 0) {
+            double[] center = {0, 0, 0};
+
+            for (Point3D point : points) {
+                center[0] += point.getX();
+                center[1] += point.getY();
+                center[2] += point.getZ();
+            }
+            center[0] /= points.size();
+            center[1] /= points.size();
+            center[2] /= points.size();
+
+            for (Point3D point : points) {
+                result.add(point.subtract(new Point3D(center[0], center[1], center[2])));
+            }
+        }
+        return result;
     }
 
+    /**
+     * Apply center() for all elements of atoms
+     * @param atoms
+     */
+    private void centerAllAtoms(Atom[] atoms){
+        ArrayList<Point3D> points = new ArrayList<>(atoms.length);
+        //Add all points to the ArrayList
+        for (Atom atom : atoms){
+            points.add(atom.getPoint());
+        }
+        //Center the points
+        points = center(points);
+        int i = 0;
+        for (Point3D point3D : points){
+            atoms[i].setPoint(point3D);
+            i++;
+        }
+        //Update the Array of Atoms
+        //this.atoms = atoms;
+    }
 }

@@ -22,7 +22,7 @@ public class PDBFile {
     private int numberOfAtoms;
 
     //Sequence of the RNA Structure
-    public String sequence = "";
+    private String sequence = "";
 
     //Create instance of PDB file with correctly sized atoms array
     public PDBFile(String filePath) {
@@ -137,5 +137,13 @@ public class PDBFile {
 
     public void setNumberOfAtoms(int numberOfAtoms) {
         this.numberOfAtoms = numberOfAtoms;
+    }
+
+    public String getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(String sequence) {
+        this.sequence = sequence;
     }
 }

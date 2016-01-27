@@ -1,17 +1,12 @@
 package Presenter;
 
-import Model2D.Nussinov;
-import Model3D.HydrogonBonds;
+import HBondInference.HydrogonBonds;
 import Selection.SelectedText;
 import javafx.beans.binding.DoubleBinding;
-import javafx.beans.property.DoubleProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 
-import javafx.scene.PerspectiveCamera;
-import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
@@ -20,8 +15,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 public class Controller {
 
@@ -78,6 +71,9 @@ public class Controller {
     @FXML
     private Pane secondaryStructure;
 
+    @FXML
+    private MenuItem centerButton;
+
     /**
      * Open a PDB file, make the 3D structure and the 2D structure
      * @param event
@@ -90,50 +86,37 @@ public class Controller {
             //If file is .pdb file, load it
             if (selectedFile.getAbsolutePath().endsWith(".pdb")) {
                 this.presenter.loadFile(selectedFile.getAbsolutePath());
-                this.presenter2D.setPdbFile(presenter.getPdbFile());
                 console.setText(console.getText() + "\n> " + selectedFile.getAbsolutePath() + " loaded succesfully!");
 
-                //Set the Atom[] array in the Presenter3D Class and extract sequence
-                presenter3D.setAtoms(presenter.getPdbFile().getAtoms());
-                sequenceField.setText(presenter.getPdbFile().sequence);
+                //Set the sequence to te textfield
+                sequenceField.setText(presenter.getPdbFile().getSequence());
 
-                //Make the 3D structure
-                presenter3D.makeMolecules();
-                structurePane.getChildren().clear();
-                structurePane.getChildren().addAll(presenter3D.subScene);
-                structurePane.setAlignment(presenter3D.subScene, Pos.CENTER);
+                presenter.setUp3DStructure();
                 //Bind scene to its pane
-                bindSceneToPane(presenter3D.subScene, vertSplitPane);
+                //bindSceneToPane(presenter3D.subScene, vertSplitPane);
 
                 //Make the secondary structure
-                //Infer base pairing from PDB file
-                try {
-                    HydrogonBonds hydrogonBonds = new HydrogonBonds();
-                    hydrogonBonds.setSequence(presenter.getPdbFile().sequence);
-                    System.out.println(hydrogonBonds.inferHydrogenBonds(presenter.getPdbFile().getAtoms()));
-                    presenter2D.buildSecondaryStructureGraph(hydrogonBonds.inferHydrogenBonds(presenter.getPdbFile().getAtoms()));
-                    secondaryStructure.getChildren().clear();
-                    secondaryStructure.getChildren().add(presenter2D.getGraphGroup());
-                }catch (NullPointerException np){
-                    //If Problems with H bond inference occur, use Nussinov instead
-                    console.setText(console.getText() + "\n> " + " Could not infer secondary structure from PDB file. Using Nussinov-algorithm instead.");
-                    Nussinov nussinov = new Nussinov(presenter.getPdbFile().sequence);
-                    nussinov.apply();
-                    presenter2D.buildSecondaryStructureGraph(nussinov.getBracketNotation());
-                    secondaryStructure.getChildren().clear();
-                    secondaryStructure.getChildren().add(presenter2D.getGraphGroup());
-                }
+                presenter.setUp2DStructure();
+
+
             } else {
                 console.setText(console.getText() + "\n> " + "Selected file is not a .pdb file!");
             }
 
         }catch (NullPointerException np){
             console.setText(console.getText() + "\n> " + "No file selected.");
+            np.printStackTrace();
         }
         catch (Exception e){
             e.printStackTrace();
             console.setText(console.getText() + "\n> Exception caught during file loading." );
         }
+    }
+
+    //Center the structure
+    @FXML
+    void center(ActionEvent event) {
+        presenter3D.centerStructure();
     }
 
     //Color each nucleotide
@@ -172,10 +155,9 @@ public class Controller {
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
 
-        //Make Presenter instance
-        presenter = new Presenter();
 
-        //Make Presenter2D instane
+
+        //Make Presenter2D instance
         presenter2D = new Presenter2D();
 
         //Make Presenter3D instance, set up action events for handling
@@ -183,6 +165,13 @@ public class Controller {
         presenter3D = new Presenter3D();
         presenter3D.setStructurePane(structurePane);
         presenter3D.setActionEvents();
+
+        //Make Presenter instance
+        presenter = new Presenter();
+        presenter.setSecondaryStructurePane(secondaryStructure);
+        presenter.setPresenter2D(presenter2D);
+        presenter.setStructurePane(structurePane);
+        presenter.setPresenter3D(presenter3D);
 
         //Initialize Text selection class
         SelectedText selectedText = new SelectedText(sequenceField);

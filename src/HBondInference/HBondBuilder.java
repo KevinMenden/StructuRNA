@@ -1,4 +1,4 @@
-package Model3D;
+package HBondInference;
 
 import PDBParser.Atom;
 import javafx.geometry.Point3D;
@@ -10,15 +10,6 @@ import javafx.geometry.Point3D;
  * Contains methods to infer H-bonds between two objects of the class
  */
 public class HBondBuilder {
-
-
-    //Minimal and maximal distance for H-bonds
-    private final double MAX_DISTANCE = 2.8f;
-    private final double MIN_DISTANCE = 1.0f;
-
-    //Minimal and maximal angles for H-bonds
-    private final double  MAX_ANGLE = 180.0f;
-    private final double  MIN_ANGLE = 150.0f;
 
     //H bond building atoms
     private Point3D N1;
@@ -51,6 +42,8 @@ public class HBondBuilder {
     public void setBaseType(String baseType) {
         this.baseType = baseType;
     }
+
+    Exception NucleotideNotSetExeption = new NullPointerException();
 
     /**
      * Set the atom
@@ -127,15 +120,17 @@ public class HBondBuilder {
         boolean bool = false;
         double distance1 = adenine.getN1().distance(uracil.getH3());
         double distance2 = adenine.getH62().distance(uracil.getO4());
-        //System.out.println("Distance between Adenine N1 " + adenine.getResdieNumber() + " and Uracil H3 " + uracil.getResdieNumber() + " : " + distance1);
-        //System.out.println("Distance between Adenine H62 " + adenine.getResdieNumber() + " and Uracil O4 " + uracil.getResdieNumber() + " : " + distance2);
+        //double angle1 = adenine.getH62().angle(adenine.getN6(), uracil.getO4());
+        //double angle2 = uracil.getH3().angle(uracil.getN3(), adenine.getN1());
+        double angle = uracil.getH3().angle(uracil.getN3(), adenine.getN1());
 
         //Check if distances fit
-        if (adenine.getN1().distance(uracil.getH3()) <= 3.5){
-            if (adenine.getH62().distance(uracil.O4) <= 3.5){
-
-                bool = true;
-                System.out.println("Hbond between " + adenine.getResdieNumber() + " and " + uracil.getResdieNumber());
+        if (distance1<= HbondConstants.MAXIMAL_DISTANCE){
+            if (distance2 <= HbondConstants.MAXIMAL_DISTANCE){
+                if (angle >= HbondConstants.MINIMAL_ANGLE) {
+                    bool = true;
+                    System.out.println("Hbond between " + adenine.getResdieNumber() + " and " + uracil.getResdieNumber() + "\t Angle1: " + angle);
+                }
             }
         }
 
@@ -143,16 +138,23 @@ public class HBondBuilder {
     }
 
     /*
-    Check for possible C-G H bond (no angles checked, only distances!)
+    Check for possible C-G H bond
      */
     private static boolean isCytosineGuanineBond (HBondBuilder cytosine, HBondBuilder guanine){
         boolean bool = false;
+        double distance1 = guanine.getO6().distance(cytosine.getH41());
+        double distance2 = guanine.getH1().distance(cytosine.getN3());
+        double distance3 = guanine.getH21().distance(cytosine.getO2());
+        double angle = guanine.getH1().angle(guanine.getN1(), cytosine.getN3());
 
-        if (guanine.getO6().distance(cytosine.getH41()) <= 3.5) {
-            if (guanine.getH1().distance(cytosine.getN3()) <= 3.5){
-                if (guanine.getH21().distance(cytosine.getO2()) <= 3.5){
-                    bool = true;
-                    System.out.println("Hbond between " + cytosine.getResdieNumber() + " and " + guanine.getResdieNumber());
+        //Check all requirements for H bonds
+        if (distance1<= HbondConstants.MAXIMAL_DISTANCE) {
+            if (distance2 <= HbondConstants.MAXIMAL_DISTANCE){
+                if (distance3 <= HbondConstants.MAXIMAL_DISTANCE) {
+                    if (angle >= HbondConstants.MINIMAL_ANGLE) {
+                        bool = true;
+                        System.out.println("Hbond between " + cytosine.getResdieNumber() + " and " + guanine.getResdieNumber() + " Angle: \t" + angle);
+                    }
                 }
             }
         }

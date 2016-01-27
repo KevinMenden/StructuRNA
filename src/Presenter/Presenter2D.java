@@ -2,9 +2,7 @@ package Presenter;
 
 import Model.Nucleotide;
 import Model2D.*;
-import Model3D.HydrogonBonds;
 import PDBParser.PDBFile;
-import View.View;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -58,9 +56,9 @@ public class Presenter2D {
         graphModel.parseNotation(dotBracket);
 
         //Calculate the 2D structure with Nussinov
-        Nussinov nussinov = new Nussinov(pdbFile.sequence);
-        nussinov.apply();
-        graphModel.parseNotation(dotBracket);
+        //Nussinov nussinov = new Nussinov(pdbFile.getSequence());
+        //nussinov.apply();
+        //graphModel.parseNotation(dotBracket);
 
         //Clear the graph group
         graphGroup.getChildren().clear();
@@ -87,7 +85,7 @@ public class Presenter2D {
         int index = 0;
         Node[] nodes = new Node[numberOfNodes];
         for (double[] point : embedding) {
-            this.graphModel.setSequence(pdbFile.sequence);
+            this.graphModel.setSequence(pdbFile.getSequence());
             Nucleotide nucleotide = new Nucleotide(this.graphModel.getSequence().charAt(index));
             Node node = new Node(point[0],point[1],5, nucleotide);
             node.setNucleotideNumber(index);
@@ -201,7 +199,7 @@ public class Presenter2D {
         //draw initial points with tooltips
         Node[] nodes = new Node[numberOfNodes];
         Node[] endNodes = new Node[numberOfNodes];
-        this.graphModel.setSequence(pdbFile.sequence);
+        this.graphModel.setSequence(pdbFile.getSequence());
         int index = 0;
         //Make nodes with initialCoordinates
         for (double[] point : initialCoordinates) {

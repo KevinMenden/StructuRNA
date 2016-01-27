@@ -1,8 +1,6 @@
-package Model3D;
+package HBondInference;
 
 import PDBParser.Atom;
-
-import java.util.ArrayList;
 
 /**
  * Created by Kevin Menden on 24.01.2016.

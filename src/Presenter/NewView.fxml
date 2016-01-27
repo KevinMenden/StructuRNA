@@ -22,6 +22,7 @@
             <items>
                   <MenuItem fx:id="colorNucleotide" mnemonicParsing="false" onAction="#colorByNucleotide" text="Color by Nucleotide" />
                   <MenuItem fx:id="colorBasetype" mnemonicParsing="false" onAction="#colorByBasetype" text="Color by Basetype" />
+                  <MenuItem fx:id="centerButton" mnemonicParsing="false" onAction="#center" text="Center" />
                   <SeparatorMenuItem mnemonicParsing="false" />
               <MenuItem mnemonicParsing="false" onAction="#clear" text="Clear" />
             </items>
