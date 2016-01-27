@@ -26,11 +26,16 @@ public class Presenter2D {
     private Graph graphModel = new Graph();
     private Group graphGroup = new Group();
 
+    //Nodes
+    Node[] nodes;
+    public Node[] getNodes() {        return nodes;    }
+    public void setNodes(Node[] nodes) {        this.nodes = nodes;    }
+
     //Max and Min values to define the 2D representation
-    private int X_MIN_2D = 50;
-    private int X_MAX_2D = 200;
-    private int Y_MIN_2D = 50;
-    private int Y_MAX_2D = 200;
+    private int X_MIN_2D = 10;
+    private int X_MAX_2D = 250;
+    private int Y_MIN_2D = 10;
+    private int Y_MAX_2D = 250;
 
     //Variables needed for mouse interactions
     double originalNodeX, originalNodeY, originalMouseX, originalMouseY,
@@ -83,7 +88,7 @@ public class Presenter2D {
 
         //draw the nodes and add tooltips for every node
         int index = 0;
-        Node[] nodes = new Node[numberOfNodes];
+        nodes = new Node[numberOfNodes];
         for (double[] point : embedding) {
             this.graphModel.setSequence(pdbFile.getSequence());
             Nucleotide nucleotide = new Nucleotide(this.graphModel.getSequence().charAt(index));

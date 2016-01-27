@@ -35,9 +35,9 @@
         </menus>
       </MenuBar>
       <TextField fx:id="sequenceField" editable="false" />
-      <SplitPane fx:id="vertSplitPane" dividerPositions="0.5638998682476943" VBox.vgrow="ALWAYS">
+      <SplitPane fx:id="vertSplitPane" dividerPositions="0.5" VBox.vgrow="ALWAYS">
          <items>
-            <StackPane fx:id="structurePane" depthTest="ENABLE" pickOnBounds="false" prefHeight="553.0" prefWidth="416.0" style="-fx-background-color: black;" />
+            <AnchorPane fx:id="structurePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: black;" />
             <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="566.0" prefWidth="233.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">

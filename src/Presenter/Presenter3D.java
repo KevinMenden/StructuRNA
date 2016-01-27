@@ -3,6 +3,7 @@ package Presenter;
 import Model3D.*;
 import PDBParser.Atom;
 import PDBParser.PDBFile;
+import Selection.SelectionModel;
 import View.View;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
@@ -10,6 +11,7 @@ import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
@@ -28,19 +30,21 @@ import java.util.ArrayList;
  */
 public class Presenter3D {
 
+    //Sequence length
+    private int sequenceLength = 0;
+    public void setSequenceLength(int sequenceLength) {this.sequenceLength = sequenceLength;}
+
     //SubScene
     SubScene subScene;
 
     //PerspectiveCamera
     PerspectiveCamera camera;
 
-    //Mouse positions when mouse is pressed
-    double mousePosX, mousePosY;
-
     //StackPane for 3D
-    public StackPane structurePane;
+    //public StackPane structurePane;
+    public AnchorPane structurePane;
     //Setter for strucutrePane
-    public void setStructurePane(StackPane structurePane) {
+    public void setStructurePane(AnchorPane structurePane) {
         this.structurePane = structurePane;
     }
 
@@ -55,7 +59,9 @@ public class Presenter3D {
     //The Group in with all the molecules
     public Group structureGroup = new Group();
     //MeshView group for all nucleotides
-    MeshView[] nucleotides;
+    private MeshView[] nucleotides;
+    public MeshView[] getNucleotides() {        return nucleotides;    }
+    public void setNucleotides(MeshView[] nucleotides) {        this.nucleotides = nucleotides;    }
 
     //The atoms as loaded from the pdb file
     private Atom[] atoms;
@@ -90,34 +96,9 @@ public class Presenter3D {
         camera.getTransforms().addAll(cameraTranslate);
         subScene.setCamera(camera);
 
-        //Save position if mouse is pressed
-        structurePane.setOnMousePressed(event -> {
-            mousePosX = event.getSceneX();
-            mousePosY = event.getSceneY();
-        });
+        //Set up handling of the structure
+        MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
 
-        /*
-        Move camera if mouse is dragged (zooming or rotating)
-         */
-        structurePane.setOnMouseDragged(event -> {
-            double dY = event.getSceneY() - mousePosY;
-            double dX = event.getSceneX() - mousePosX;
-            //Zoom if shift is down
-            if (event.isShiftDown()){
-                cameraTranslate.setZ(cameraTranslate.getZ() -  dY);
-                //Move if alt is down
-            } else if (event.isAltDown()) {
-                structureGroup.setTranslateX(structureGroup.getTranslateX() +  0.1 * dX);
-                structureGroup.setTranslateY(structureGroup.getTranslateY() +  0.1 * dY);
-            }
-            //Else rotate the camera around the object
-            else{
-                cameraRotateY.setAngle(cameraRotateY.getAngle() -  dX);
-                cameraRotateX.setAngle(cameraRotateX.getAngle() +  dY);
-            }
-            mousePosY = event.getSceneY();
-            mousePosX = event.getSceneX();
-        });
     }
 
 
@@ -217,6 +198,10 @@ public class Presenter3D {
         //Center all atom coordinates
         centerAllAtoms(this.atoms);
 
+        //SET UP ARRAY - TESTING STAGE
+        nucleotides = new MeshView[sequenceLength];
+
+
         //Atom[] atoms = this.pdbFile.getAtoms();
         //Get rid of old stuff
         structureGroup.getChildren().clear();
@@ -266,7 +251,7 @@ public class Presenter3D {
 
         //Connect all bases with sugars
         connectBasesWithSugars(atoms);
-
+        counter = 0;
         /*
         CREATE MESH VIEWS FOR ALL BASES AND SUGARS
          */
@@ -292,6 +277,7 @@ public class Presenter3D {
                         ribose.setMaterial(cytosineMaterial);
                         cytosine.makeMesh();
                         structureGroup.getChildren().add(cytosine.getMeshView());
+                        nucleotides[counter] = cytosine.getMeshView() ;
                         ribose.makeTooltip(cytosine.getNucleotideInfo());
                         cytosine = new Cytosine();
                         break;
@@ -300,6 +286,7 @@ public class Presenter3D {
                         ribose.setMaterial(guanineMaterial);
                         guanine.makeMesh();
                         structureGroup.getChildren().add(guanine.getMeshView());
+                        nucleotides[counter] = guanine.getMeshView();
                         ribose.makeTooltip(guanine.getNucleotideInfo());
                         guanine = new Guanine();
                         break;
@@ -308,6 +295,7 @@ public class Presenter3D {
                         ribose.setMaterial(uracilMaterial);
                         uracil.makeMesh();
                         structureGroup.getChildren().add(uracil.getMeshView());
+                        nucleotides[counter] = uracil.getMeshView();
                         ribose.makeTooltip(uracil.getNucleotideInfo());
                         uracil = new Uracil();
                         break;
@@ -316,6 +304,7 @@ public class Presenter3D {
                         ribose.setMaterial(adenineMaterial);
                         adenine.makeMesh();
                         structureGroup.getChildren().add(adenine.getMeshView());
+                        nucleotides[counter] = adenine.getMeshView();
                         ribose.makeTooltip(adenine.getNucleotideInfo());
                         adenine = new Adenine();
                         break;
@@ -327,6 +316,7 @@ public class Presenter3D {
                 structureGroup.getChildren().add(ribose.getMeshView());
 
                 //Update values and bases
+                counter++;
                 ribose = new Ribose();
                 currentBase = atom.getBase();
                 resdiueNumber = atom.getResidueNumber();

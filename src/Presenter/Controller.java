@@ -2,6 +2,7 @@ package Presenter;
 
 import HBondInference.HydrogonBonds;
 import Selection.SelectedText;
+import Selection.SelectionControl;
 import javafx.beans.binding.DoubleBinding;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -9,6 +10,7 @@ import javafx.geometry.Pos;
 
 import javafx.scene.SubScene;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -35,8 +37,11 @@ public class Controller {
     @FXML
     private MenuItem colorBasetype;
 
+    //@FXML
+    //private StackPane structurePane;
+
     @FXML
-    private StackPane structurePane;
+    private AnchorPane structurePane;
 
     @FXML
     private Menu helpMenu;
@@ -90,13 +95,20 @@ public class Controller {
 
                 //Set the sequence to te textfield
                 sequenceField.setText(presenter.getPdbFile().getSequence());
+                presenter3D.setSequenceLength(presenter.getSequence().length());
 
+                SelectionControl selectionControl = new SelectionControl();
+                selectionControl.setSecondaryPane(secondaryStructure);
+                selectionControl.setStructurePane(structurePane);
+
+                //Make the 3d structure, init selection model
+                presenter3D.centerStructure();
                 presenter.setUp3DStructure();
-                //Bind scene to its pane
-                //bindSceneToPane(presenter3D.subScene, vertSplitPane);
+                selectionControl.initSelectionModel3D(presenter3D.getNucleotides());
 
                 //Make the secondary structure
                 presenter.setUp2DStructure();
+                selectionControl.initSelectionModel2D(presenter2D.getNodes());
 
 
             } else {

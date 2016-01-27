@@ -5,11 +5,17 @@ import Model.Nucleotide;
 import Model2D.*;
 import PDBParser.Atom;
 import PDBParser.PDBFile;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 /**
  * Created by Kevin Menden on 20.01.2016.
@@ -35,7 +41,7 @@ public class Presenter {
     private Atom[] atoms;
 
     //3D structure pane
-    private StackPane structurePane;
+    private AnchorPane structurePane;
 
     //2D structure pane
     Pane secondaryStructurePane;
@@ -84,6 +90,17 @@ public class Presenter {
         presenter3D.makeMolecules();
         structurePane.getChildren().clear();
         structurePane.getChildren().add(presenter3D.subScene);
+        structurePane.setRightAnchor(presenter3D.subScene, 0.0);
+        structurePane.setLeftAnchor(presenter3D.subScene, 0.0);
+
+        final Timeline timeline = new Timeline();
+        timeline.setCycleCount(4);
+        timeline.setAutoReverse(true);
+        timeline.getKeyFrames().add(new KeyFrame(Duration.millis(1000),
+                new KeyValue(presenter3D.structureGroup.scaleXProperty(), 2),
+                new KeyValue(presenter3D.structureGroup.scaleYProperty(), 2)));
+        timeline.play();
+
     }
 
     /*
@@ -124,11 +141,11 @@ public class Presenter {
     }
 
 
-    public StackPane getStructurePane() {
+    public AnchorPane getStructurePane() {
         return structurePane;
     }
 
-    public void setStructurePane(StackPane structurePane) {
+    public void setStructurePane(AnchorPane structurePane) {
         this.structurePane = structurePane;
     }
 }
