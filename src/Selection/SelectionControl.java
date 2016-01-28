@@ -1,6 +1,7 @@
 package Selection;
 
 import Model2D.Node;
+import Model3D.MoleculeMesh;
 import javafx.animation.Animation;
 import javafx.animation.FillTransition;
 import javafx.scene.layout.AnchorPane;
@@ -38,52 +39,44 @@ public class SelectionControl {
     //WILL BE MODIFIED IN TERMS OF BETTER HANDLING
 
 
-    public static void initSelectionModel3D(MeshView[] nucleotides){
-        SelectionModel<MeshView> selectionModel = new SelectionModel<>(nucleotides);
+    public static void initSelectionModel3D(MoleculeMesh[] nucleotides){
+        SelectionModel<MoleculeMesh> selectionModel = new SelectionModel<>(nucleotides);
         // setup selection capture in view:
         for (int i = 0; i < nucleotides.length; i++) {
             final int index=i;
             nucleotides[i].setOnMouseClicked((e) -> {
                 if(!e.isShiftDown())
                     selectionModel.clearSelection();
+                    nucleotides[index].switchOff();
                 if(selectionModel.isSelected(index)) {
                     selectionModel.clearSelection(index);
                 }
                 else {
                     selectionModel.select(index);
-                    nucleotides[index].setMaterial(selectionMaterial);;
+                    nucleotides[index].switchOn();
                 }
             });
         }
     }
 
 
-    private void makeFillTransition(Node node){
-        FillTransition fillTransition = new FillTransition(Duration.millis(1000),node , Color.CYAN, Color.BROWN);
-        fillTransition.setCycleCount(Animation.INDEFINITE);
-        fillTransition.setAutoReverse(true);
-        fillTransition.play();
-    }
-
     public void initSelectionModel2D(Node[] nodes){
         SelectionModel<Node> selectionModel = new SelectionModel<>(nodes);
         // setup selection capture in view:
         for (int i = 0; i < nodes.length; i++) {
             final int index=i;
-            secondaryPane.getChildren().add(nodes[i].getSelectionBox());
             nodes[i].setOnMouseClicked((e) -> {
                 if(!e.isShiftDown()) {
                     selectionModel.clearSelection();
-                    nodes[index].showSelectionBox(false);
                 }
                 if(selectionModel.isSelected(index)) {
                     selectionModel.clearSelection(index);
-                    nodes[index].showSelectionBox(false);
+                    nodes[index].switchOff();
+                    System.out.println("Deselected");
                 }
                 else {
-                    makeFillTransition(nodes[index]);
                     selectionModel.select(index);
-                    nodes[index].showSelectionBox(true);
+                    nodes[index].switchOn();
                 }
             });
         }

@@ -13,7 +13,7 @@ import javafx.scene.shape.TriangleMesh;
 public class Ribose {
 
 
-    private MeshView meshView = new MeshView();
+    private MoleculeMesh meshView = new MoleculeMesh();
 
     private float[] coordinates = new float[15];
 
@@ -35,9 +35,6 @@ public class Ribose {
             1, 0, 4, 2, 0, 1
     };
 
-    //Make smoothing groups
-    private final int SMOOTHING_GROUP = 5;
-    private int[] smoothing = new int[faces.length];
 
     //Empty constructor
     public Ribose(){
@@ -63,13 +60,9 @@ public class Ribose {
         triangleMesh.getTexCoords().addAll(texCoords);
         triangleMesh.getPoints().addAll(coordinates);
         triangleMesh.getFaces().addAll(faces);
-        //fillSmoothingGroup();
-        //triangleMesh.getFaceSmoothingGroups().addAll(smoothing);
-        //System.out.println(triangleMesh.getFaceSmoothingGroups().size());
-        //System.out.println(triangleMesh.getFaceSmoothingGroups());
 
         this.meshView.setMesh(triangleMesh);
-        this.meshView.setMaterial(material);
+        this.meshView.setOriginalMaterial(material);
     }
 
     /**
@@ -112,12 +105,7 @@ public class Ribose {
 
     }
 
-    //Make smoothing group array
-    private void fillSmoothingGroup(){
-        for (int i = 0; i < smoothing.length; i++){
-            smoothing[i] = SMOOTHING_GROUP;
-        }
-    }
+
 
     //Install Tooltip for this Ribose molecule
     public void makeTooltip(String tip) {

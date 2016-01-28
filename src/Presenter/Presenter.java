@@ -15,7 +15,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Cylinder;
 import javafx.util.Duration;
+
+import java.util.ArrayList;
 
 /**
  * Created by Kevin Menden on 20.01.2016.
@@ -75,10 +78,11 @@ public class Presenter {
         presenter2D.setPdbFile(pdbFile);
         HydrogonBonds hydrogonBonds = new HydrogonBonds();
         hydrogonBonds.setSequence(sequence);
-        System.out.println(hydrogonBonds.inferHydrogenBonds(atoms));
+        System.out.println(hydrogonBonds.inferHydrogenBonds(presenter3D.getAtoms()));
         presenter2D.buildSecondaryStructureGraph(hydrogonBonds.inferHydrogenBonds(atoms));
         secondaryStructurePane.getChildren().clear();
         secondaryStructurePane.getChildren().add(presenter2D.getGraphGroup());
+
     }
 
 
@@ -92,14 +96,6 @@ public class Presenter {
         structurePane.getChildren().add(presenter3D.subScene);
         structurePane.setRightAnchor(presenter3D.subScene, 0.0);
         structurePane.setLeftAnchor(presenter3D.subScene, 0.0);
-
-        final Timeline timeline = new Timeline();
-        timeline.setCycleCount(4);
-        timeline.setAutoReverse(true);
-        timeline.getKeyFrames().add(new KeyFrame(Duration.millis(1000),
-                new KeyValue(presenter3D.structureGroup.scaleXProperty(), 2),
-                new KeyValue(presenter3D.structureGroup.scaleYProperty(), 2)));
-        timeline.play();
 
     }
 

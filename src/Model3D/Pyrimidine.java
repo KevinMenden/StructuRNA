@@ -15,7 +15,7 @@ public class Pyrimidine {
     //Information about the nucleotide
     private String nucleotideInfo = null;
 
-    private MeshView meshView = new MeshView();
+    private MoleculeMesh meshView = new MoleculeMesh();
 
     private float[] coordinates = new float[18];
 
@@ -57,7 +57,7 @@ public class Pyrimidine {
         triangleMesh.getFaces().addAll(faces);
 
         this.meshView.setMesh(triangleMesh);
-        this.meshView.setMaterial(material);
+        this.meshView.setOriginalMaterial(material);
         Tooltip tooltip = new Tooltip(this.getNucleotideInfo());
         tooltip.install(this.meshView, tooltip);
     }
@@ -156,7 +156,7 @@ public class Pyrimidine {
         this.texCoords = texCoords;
     }
 
-    public MeshView getMeshView() {
+    public MoleculeMesh getMeshView() {
         return meshView;
     }
 }

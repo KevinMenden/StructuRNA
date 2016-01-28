@@ -2,6 +2,11 @@ package HBondInference;
 
 import PDBParser.Atom;
 import javafx.geometry.Point3D;
+import javafx.scene.shape.Cylinder;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Translate;
+
+import java.util.ArrayList;
 
 /**
  * Created by Kevin Menden on 26.01.2016.
@@ -26,6 +31,10 @@ public class HBondBuilder {
     private Point3D H3;
     private Point3D H1;
     private Point3D H41;
+
+    //ArrayList of hbonds
+    private ArrayList<Cylinder> hbonds = new ArrayList<>();
+    public ArrayList<Cylinder> getHbonds() {        return hbonds;    }
 
     //Base type and residueNumber with their getters and setter
     String baseType;
@@ -90,7 +99,7 @@ public class HBondBuilder {
      * @param builderB
      * @return
      */
-    public static boolean isHbond(HBondBuilder builderA, HBondBuilder builderB){
+    public  boolean isHbond(HBondBuilder builderA, HBondBuilder builderB){
         boolean bool = false;
 
         //Check if possible Watson Crick base pair
@@ -116,7 +125,7 @@ public class HBondBuilder {
     /*
     Check for possible A-U H bond (no angles checked, only distances!)
      */
-    private static boolean isAdenineUracilBond(HBondBuilder adenine, HBondBuilder uracil){
+    private  boolean isAdenineUracilBond(HBondBuilder adenine, HBondBuilder uracil){
         boolean bool = false;
         double distance1 = adenine.getN1().distance(uracil.getH3());
         double distance2 = adenine.getH62().distance(uracil.getO4());
@@ -130,6 +139,8 @@ public class HBondBuilder {
                 if (angle >= HbondConstants.MINIMAL_ANGLE) {
                     bool = true;
                     System.out.println("Hbond between " + adenine.getResdieNumber() + " and " + uracil.getResdieNumber() + "\t Angle1: " + angle);
+                    hbonds.add(makeHydrogenBond(adenine.getN1(), uracil.getH3()));
+                    hbonds.add(makeHydrogenBond(adenine.getH62(), uracil.getO4()));
                 }
             }
         }
@@ -140,7 +151,7 @@ public class HBondBuilder {
     /*
     Check for possible C-G H bond
      */
-    private static boolean isCytosineGuanineBond (HBondBuilder cytosine, HBondBuilder guanine){
+    private  boolean isCytosineGuanineBond (HBondBuilder cytosine, HBondBuilder guanine){
         boolean bool = false;
         double distance1 = guanine.getO6().distance(cytosine.getH41());
         double distance2 = guanine.getH1().distance(cytosine.getN3());
@@ -154,12 +165,38 @@ public class HBondBuilder {
                     if (angle >= HbondConstants.MINIMAL_ANGLE) {
                         bool = true;
                         System.out.println("Hbond between " + cytosine.getResdieNumber() + " and " + guanine.getResdieNumber() + " Angle: \t" + angle);
+                        hbonds.add(makeHydrogenBond(guanine.getO6(), cytosine.getH41()));
+                        hbonds.add(makeHydrogenBond(guanine.getH1(), cytosine.getN3()));
+                        hbonds.add(makeHydrogenBond(guanine.getH21(), cytosine.getO2()));
                     }
                 }
             }
         }
 
         return bool;
+    }
+
+    /**
+     * Create hydrogen bonds shape from two points
+     */
+    private Cylinder makeHydrogenBond(Point3D origin, Point3D target){
+        Point3D yAxis = new Point3D(0, 1, 0);
+        Point3D diff = target.subtract(origin);
+        double height = diff.magnitude();
+
+        Point3D mid = target.midpoint(origin);
+        Translate moveToMidpoint = new Translate(mid.getX(), mid.getY(), mid.getZ());
+
+        Point3D axisOfRotation = diff.crossProduct(yAxis);
+        double angle = Math.acos(diff.normalize().dotProduct(yAxis));
+        Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
+
+        Cylinder line = new Cylinder(0.1, height);
+        line.setMaterial(HbondConstants.hBondMaterial);
+        line.setOpacity(0.7);
+        line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
+
+        return line;
     }
 
     /*

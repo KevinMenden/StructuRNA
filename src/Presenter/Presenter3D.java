@@ -2,22 +2,14 @@ package Presenter;
 
 import Model3D.*;
 import PDBParser.Atom;
-import PDBParser.PDBFile;
-import Selection.SelectionModel;
-import View.View;
-import javafx.event.Event;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.Shape;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 
@@ -59,15 +51,19 @@ public class Presenter3D {
     //The Group in with all the molecules
     public Group structureGroup = new Group();
     //MeshView group for all nucleotides
-    private MeshView[] nucleotides;
-    public MeshView[] getNucleotides() {        return nucleotides;    }
-    public void setNucleotides(MeshView[] nucleotides) {        this.nucleotides = nucleotides;    }
+    private MoleculeMesh[] nucleotides;
+    public MoleculeMesh[] getNucleotides() {        return nucleotides;    }
+    public void setNucleotides(MoleculeMesh[] nucleotides) {        this.nucleotides = nucleotides;    }
 
-    //The atoms as loaded from the pdb file
+    //The atoms as loaded from the pdb file, centered
     private Atom[] atoms;
     //Setter for atoms
     public void setAtoms(Atom[] atoms) {
         this.atoms = atoms;
+        centerAllAtoms(this.atoms);
+    }
+    public Atom[] getAtoms() {
+        return atoms;
     }
 
     //Materials for different coloring of bases
@@ -183,11 +179,6 @@ public class Presenter3D {
         return moleculeSize;
     }
 
-    public void assembleMolecules(){
-        MoleculeAssembler moleculeAssembler = new MoleculeAssembler();
-        moleculeAssembler.setAtoms(atoms);
-        this.structureGroup = moleculeAssembler.makeMolecules();
-    }
 
     /**
      * For every molecule in the PDB file make a shape and add it
@@ -199,7 +190,7 @@ public class Presenter3D {
         centerAllAtoms(this.atoms);
 
         //SET UP ARRAY - TESTING STAGE
-        nucleotides = new MeshView[sequenceLength];
+        nucleotides = new MoleculeMesh[sequenceLength];
 
 
         //Atom[] atoms = this.pdbFile.getAtoms();

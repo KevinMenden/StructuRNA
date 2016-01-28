@@ -1,10 +1,13 @@
 package Model2D;
 
 import Model.Nucleotide;
+import javafx.animation.Animation;
+import javafx.animation.FillTransition;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 
 /**
  * Created by Kevin Menden on 25.11.2015.
@@ -17,11 +20,11 @@ public class Node extends Circle {
 
     private double radius = 5;
 
+    FillTransition fillTransition;
+
     public Node(double centerX, double centerY, double radius) {
         super(centerX, centerY, radius);
     }
-
-    private final Rectangle selectionBox = new Rectangle(2*radius, 2*radius, Color.TRANSPARENT);
 
 
     public Node(double centerX, double centerY, double radius, Nucleotide nucleotide) {
@@ -29,10 +32,18 @@ public class Node extends Circle {
         this.nucleotide = nucleotide;
         this.setFill(getColor(nucleotide.getNucleotide()));
         this.radius = radius;
-        this.selectionBox.setLayoutY(centerY - radius);
-        this.selectionBox.setLayoutX(centerX - radius);
-        this.selectionBox.setStroke(Color.RED);
-        this.selectionBox.setVisible(false);
+        fillTransition = new FillTransition(Duration.millis(500),this , Color.CYAN, Color.BROWN);
+        fillTransition.setCycleCount(Animation.INDEFINITE);
+        fillTransition.setAutoReverse(true);
+
+    }
+
+    public void switchOn(){
+        this.fillTransition.play();
+    }
+    public void switchOff(){
+        this.fillTransition.stop();
+        this.setFill(getColor(nucleotide.getNucleotide()));
     }
 
 
@@ -61,14 +72,6 @@ public class Node extends Circle {
         return color;
     }
 
-    public void showSelectionBox(Boolean bool){
-        if (bool){
-            this.selectionBox.setVisible(true);
-        } else {
-            this.selectionBox.setVisible(false);
-            System.out.println("Still see the thang?");
-        }
-    }
 
     /*
     GETTER AND SETTER
@@ -79,10 +82,6 @@ public class Node extends Circle {
 
     public void setNucleotideNumber(int nucleotideNumber) {
         this.nucleotideNumber = nucleotideNumber;
-    }
-
-    public Rectangle getSelectionBox() {
-        return selectionBox;
     }
 
 

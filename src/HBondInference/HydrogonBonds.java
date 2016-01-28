@@ -1,6 +1,10 @@
 package HBondInference;
 
 import PDBParser.Atom;
+import javafx.scene.shape.Cylinder;
+
+import java.util.ArrayList;
+
 
 /**
  * Created by Kevin Menden on 24.01.2016.
@@ -20,6 +24,9 @@ public class HydrogonBonds {
     //Sequence of the molecule
     private String sequence = "";
 
+    //ArrayList of hbonds
+    private ArrayList<Cylinder> hbonds;
+    public ArrayList<Cylinder> getHbonds() {return hbonds;}
 
     public void setAtoms(Atom[] atoms) {
         this.atoms = atoms;
@@ -43,6 +50,7 @@ public class HydrogonBonds {
         }
         //Array of HBondBuilers
         HBondBuilder[] hBondBuilders = new HBondBuilder[sequence.length()];
+        HBondBuilder generalBuilder = new HBondBuilder();
 
         //For all nucleotides, save the elements necessar for H bond infrence
         //i.e. create HBondBuilder objects for each nucleotide
@@ -76,7 +84,7 @@ public class HydrogonBonds {
             //Second HBondBuilder
             for (HBondBuilder builderB : hBondBuilders){
                 //Check H bond
-                if (HBondBuilder.isHbond(builderA, builderB)){
+                if (generalBuilder.isHbond(builderA, builderB)){
                     //Set brackets in dot bracket notation
                     if (indexOne < indexTwo){
                         dotBracket.setCharAt(indexOne, '(');
@@ -90,6 +98,8 @@ public class HydrogonBonds {
             }
             indexOne++;
         }
+        this.hbonds = generalBuilder.getHbonds();
+        this.dotBracket = dotBracket.toString();
         return dotBracket.toString();
     }
 
@@ -202,6 +212,7 @@ public class HydrogonBonds {
         }
         return bool;
     }
+
 
 
 }

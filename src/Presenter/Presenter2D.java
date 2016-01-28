@@ -59,17 +59,13 @@ public class Presenter2D {
     public void buildSecondaryStructureGraph(String dotBracket){
         //Parse the dot bracket notation
         graphModel.parseNotation(dotBracket);
-
-        //Calculate the 2D structure with Nussinov
-        //Nussinov nussinov = new Nussinov(pdbFile.getSequence());
-        //nussinov.apply();
-        //graphModel.parseNotation(dotBracket);
+        System.out.println(dotBracket);
 
         //Clear the graph group
         graphGroup.getChildren().clear();
 
         //Make embedding
-        double[][] embedding = SpringEmbedder.computeSpringEmbedding(10, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
+        double[][] embedding = SpringEmbedder.computeSpringEmbedding(30, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
         SpringEmbedder.centerCoordinates(embedding, X_MIN_2D, X_MAX_2D, Y_MIN_2D, Y_MAX_2D);
         //Make initial coordinates
         double[][] initialCoordinates = setCoordniatesOnCircle(this.graphModel.getNumberOfNodes());
