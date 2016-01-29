@@ -1,18 +1,14 @@
 package Presenter;
 
-import HBondInference.HydrogonBonds;
-import Selection.SelectedText;
 import Selection.SelectionControl;
 import javafx.beans.binding.DoubleBinding;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 
 import javafx.scene.SubScene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
@@ -41,7 +37,7 @@ public class Controller {
     //private StackPane structurePane;
 
     @FXML
-    private AnchorPane structurePane;
+    private Pane structurePane;
 
     @FXML
     private Menu helpMenu;
@@ -97,19 +93,18 @@ public class Controller {
                 sequenceField.setText(presenter.getPdbFile().getSequence());
                 presenter3D.setSequenceLength(presenter.getSequence().length());
 
-                SelectionControl selectionControl = new SelectionControl();
-                selectionControl.setSecondaryPane(secondaryStructure);
-                selectionControl.setStructurePane(structurePane);
+                //SelectionControl instance, handles selection events
+                SelectionControl selectionControl = new SelectionControl(sequenceField, secondaryStructure, structurePane);
 
-                //Make the 3d structure, init selection model
+                //Center atoms, make 3D structure
                 presenter3D.centerStructure();
                 presenter.setUp3DStructure();
-                selectionControl.initSelectionModel3D(presenter3D.getNucleotides());
 
                 //Make the secondary structure
                 presenter.setUp2DStructure();
-                selectionControl.initSelectionModel2D(presenter2D.getNodes());
 
+                //With all objects produced, initialize SelectionModels
+                selectionControl.initSelectionModel(presenter3D.getNucleotides(), presenter2D.getNodes());
 
             } else {
                 console.setText(console.getText() + "\n> " + "Selected file is not a .pdb file!");
@@ -176,17 +171,12 @@ public class Controller {
         //the 3D structure
         presenter3D = new Presenter3D();
         presenter3D.setStructurePane(structurePane);
-        presenter3D.setActionEvents();
-
         //Make Presenter instance
         presenter = new Presenter();
         presenter.setSecondaryStructurePane(secondaryStructure);
         presenter.setPresenter2D(presenter2D);
         presenter.setStructurePane(structurePane);
         presenter.setPresenter3D(presenter3D);
-
-        //Initialize Text selection class
-        SelectedText selectedText = new SelectedText(sequenceField);
 
     }
 

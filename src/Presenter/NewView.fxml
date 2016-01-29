@@ -34,10 +34,14 @@
           </Menu>
         </menus>
       </MenuBar>
-      <TextField fx:id="sequenceField" editable="false" />
+      <TextField fx:id="sequenceField" editable="false" style="-fx-highlight-fill: lightgray; -fx-highlight-text-fill: firebrick;" />
       <SplitPane fx:id="vertSplitPane" dividerPositions="0.5" VBox.vgrow="ALWAYS">
          <items>
-            <AnchorPane fx:id="structurePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: black;" />
+            <Pane fx:id="structurePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: black;">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Pane>
             <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="566.0" prefWidth="233.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">

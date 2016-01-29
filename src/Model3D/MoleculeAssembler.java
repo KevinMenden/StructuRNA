@@ -19,15 +19,27 @@ import java.util.ArrayList;
 public class MoleculeAssembler {
 
     //Materials for different coloring of bases
-    PhongMaterial uracilMaterial = new PhongMaterial(Color.GREEN);
-    PhongMaterial adenineMaterial = new PhongMaterial(Color.RED);
-    PhongMaterial cytosineMaterial = new PhongMaterial(Color.BLUE);
-    PhongMaterial guanineMaterial = new PhongMaterial(Color.YELLOW);
+    private PhongMaterial uracilMaterial = new PhongMaterial(Color.GREEN);
+    private PhongMaterial adenineMaterial = new PhongMaterial(Color.RED);
+    private PhongMaterial cytosineMaterial = new PhongMaterial(Color.BLUE);
+    private PhongMaterial guanineMaterial = new PhongMaterial(Color.YELLOW);
+    //Materials for connections
+    private PhongMaterial phosphateConnectionMaterial = new PhongMaterial(Color.LIGHTGRAY);
+    private PhongMaterial sugarConnectionMaterial = new PhongMaterial(Color.ANTIQUEWHITE);
 
     //The Group in with all the molecules
-    public Group structureGroup = new Group();
+    private Group structureGroup = new Group();
+    public Group getStructureGroup() {        return structureGroup;    }
+
+    //sequence
+    private int sequenceLength;
+    public int getSequenceLength() {        return sequenceLength;    }
+    public void setSequenceLength(int sequenceLength) {        this.sequenceLength = sequenceLength;    }
+
     //MeshView group for all nucleotides
-    MeshView[] nucleotides;
+    MoleculeMesh[] nucleotides;
+    public MoleculeMesh[] getNucleotides() {        return nucleotides;    }
+    public void setNucleotides(MoleculeMesh[] nucleotides) {        this.nucleotides = nucleotides;    }
 
     //Array of all atoms
     Atom[] atoms;
@@ -38,14 +50,25 @@ public class MoleculeAssembler {
         this.atoms = atoms;
     }
 
+    public MoleculeAssembler(Atom[] atoms, int sequenceLength){
+        this.atoms = atoms;
+        this.sequenceLength = sequenceLength;
+        //Center all atom coordinates
+        centerAllAtoms(this.atoms);
+    }
+
     /**
      * For every molecule in the PDB file make a shape and add it
      * to the group
      * Returns the group with all molecules in it
      */
-    public Group makeMolecules(){
+    public void assembleMolecules(){
         //Center all atom coordinates
-        centerAllAtoms(this.atoms);
+        //centerAllAtoms(this.atoms);
+
+        //SET UP ARRAY - TESTING STAGE
+        nucleotides = new MoleculeMesh[this.sequenceLength];
+
 
         //Atom[] atoms = this.pdbFile.getAtoms();
         //Get rid of old stuff
@@ -96,7 +119,7 @@ public class MoleculeAssembler {
 
         //Connect all bases with sugars
         connectBasesWithSugars(atoms);
-
+        counter = 0;
         /*
         CREATE MESH VIEWS FOR ALL BASES AND SUGARS
          */
@@ -122,6 +145,7 @@ public class MoleculeAssembler {
                         ribose.setMaterial(cytosineMaterial);
                         cytosine.makeMesh();
                         structureGroup.getChildren().add(cytosine.getMeshView());
+                        nucleotides[counter] = cytosine.getMeshView() ;
                         ribose.makeTooltip(cytosine.getNucleotideInfo());
                         cytosine = new Cytosine();
                         break;
@@ -130,6 +154,7 @@ public class MoleculeAssembler {
                         ribose.setMaterial(guanineMaterial);
                         guanine.makeMesh();
                         structureGroup.getChildren().add(guanine.getMeshView());
+                        nucleotides[counter] = guanine.getMeshView();
                         ribose.makeTooltip(guanine.getNucleotideInfo());
                         guanine = new Guanine();
                         break;
@@ -138,6 +163,7 @@ public class MoleculeAssembler {
                         ribose.setMaterial(uracilMaterial);
                         uracil.makeMesh();
                         structureGroup.getChildren().add(uracil.getMeshView());
+                        nucleotides[counter] = uracil.getMeshView();
                         ribose.makeTooltip(uracil.getNucleotideInfo());
                         uracil = new Uracil();
                         break;
@@ -146,6 +172,7 @@ public class MoleculeAssembler {
                         ribose.setMaterial(adenineMaterial);
                         adenine.makeMesh();
                         structureGroup.getChildren().add(adenine.getMeshView());
+                        nucleotides[counter] = adenine.getMeshView();
                         ribose.makeTooltip(adenine.getNucleotideInfo());
                         adenine = new Adenine();
                         break;
@@ -157,6 +184,7 @@ public class MoleculeAssembler {
                 structureGroup.getChildren().add(ribose.getMeshView());
 
                 //Update values and bases
+                counter++;
                 ribose = new Ribose();
                 currentBase = atom.getBase();
                 resdiueNumber = atom.getResidueNumber();
@@ -167,7 +195,6 @@ public class MoleculeAssembler {
                 ribose.fillCoordinates(atom);
             }
         }
-        return structureGroup;
     }
 
     /**
@@ -190,7 +217,7 @@ public class MoleculeAssembler {
         Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
 
         Cylinder line = new Cylinder(0.3, height);
-        line.setMaterial(new PhongMaterial(Color.LIGHTGOLDENRODYELLOW));
+        line.setMaterial(phosphateConnectionMaterial);
 
         line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
 
@@ -217,7 +244,7 @@ public class MoleculeAssembler {
         Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
 
         Cylinder line = new Cylinder(0.1, height);
-        line.setMaterial(new PhongMaterial(Color.LIGHTCYAN));
+        line.setMaterial(sugarConnectionMaterial);
 
         line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
 
@@ -389,5 +416,37 @@ Connect all Phosphates with the right sugars
         }
         //Update the Array of Atoms
         //this.atoms = atoms;
+    }
+
+    public PhongMaterial getAdenineMaterial() {
+        return adenineMaterial;
+    }
+
+    public void setAdenineMaterial(PhongMaterial adenineMaterial) {
+        this.adenineMaterial = adenineMaterial;
+    }
+
+    public PhongMaterial getCytosineMaterial() {
+        return cytosineMaterial;
+    }
+
+    public void setCytosineMaterial(PhongMaterial cytosineMaterial) {
+        this.cytosineMaterial = cytosineMaterial;
+    }
+
+    public PhongMaterial getGuanineMaterial() {
+        return guanineMaterial;
+    }
+
+    public void setGuanineMaterial(PhongMaterial guanineMaterial) {
+        this.guanineMaterial = guanineMaterial;
+    }
+
+    public PhongMaterial getUracilMaterial() {
+        return uracilMaterial;
+    }
+
+    public void setUracilMaterial(PhongMaterial uracilMaterial) {
+        this.uracilMaterial = uracilMaterial;
     }
 }

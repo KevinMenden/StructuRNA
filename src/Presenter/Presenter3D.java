@@ -6,6 +6,7 @@ import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
@@ -32,11 +33,14 @@ public class Presenter3D {
     //PerspectiveCamera
     PerspectiveCamera camera;
 
+    //molecule assembler
+    MoleculeAssembler moleculeAssembler;
+
     //StackPane for 3D
     //public StackPane structurePane;
-    public AnchorPane structurePane;
+    public Pane structurePane;
     //Setter for strucutrePane
-    public void setStructurePane(AnchorPane structurePane) {
+    public void setStructurePane(Pane structurePane) {
         this.structurePane = structurePane;
     }
 
@@ -75,10 +79,21 @@ public class Presenter3D {
     public Presenter3D() {};
 
     /*
-    Set up all the action events for moving the 3D structure
-    Initialize the SubScene and set up the camera
+    Build the 3D structure with the MoleculeAssembler
+    Set upt he structure group and the SubScene
+    Add structure handling to the scene
      */
-    public void setActionEvents(){
+    public void make3DStructure(){
+
+        //Assemble the molecules
+        moleculeAssembler = new MoleculeAssembler(this.atoms, this.sequenceLength);
+        moleculeAssembler.setAdenineMaterial(adenineMaterial);
+        moleculeAssembler.setGuanineMaterial(guanineMaterial);
+        moleculeAssembler.setCytosineMaterial(cytosineMaterial);
+        moleculeAssembler.setUracilMaterial(uracilMaterial);
+        moleculeAssembler.assembleMolecules();
+        this.structureGroup = moleculeAssembler.getStructureGroup();
+        this.nucleotides = moleculeAssembler.getNucleotides();
 
         //Initialize SubScene and camera
 
@@ -91,6 +106,9 @@ public class Presenter3D {
         structureGroup.getTransforms().addAll(cameraRotateX, cameraRotateY);
         camera.getTransforms().addAll(cameraTranslate);
         subScene.setCamera(camera);
+        //Bind subscene to its pane
+        subScene.widthProperty().bind(structurePane.widthProperty());
+        subScene.heightProperty().bind(structurePane.heightProperty());
 
         //Set up handling of the structure
         MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
@@ -147,334 +165,6 @@ public class Presenter3D {
 
 
 
-    /**
-     * Returns the size of a Nucleotide when given its type
-     * @param moleculeType
-     * @return
-     */
-        private int getMoleculeSize(String moleculeType){
-        int moleculeSize = 0;
-
-        switch (moleculeType){
-            case "C":
-                moleculeSize = 18;
-                break;
-            case "A":
-                moleculeSize = 27;
-                break;
-            case "U":
-                moleculeSize = 18;
-                break;
-            case "G":
-                moleculeSize = 27;
-                break;
-            case "T":
-                moleculeSize = 18;
-                break;
-            default:
-                System.out.println("Could not identify molecule type");
-                break;
-        }
-
-        return moleculeSize;
-    }
-
-
-    /**
-     * For every molecule in the PDB file make a shape and add it
-     * to the group
-     * Returns the group with all molecules in it
-     */
-    public void makeMolecules(){
-        //Center all atom coordinates
-        centerAllAtoms(this.atoms);
-
-        //SET UP ARRAY - TESTING STAGE
-        nucleotides = new MoleculeMesh[sequenceLength];
-
-
-        //Atom[] atoms = this.pdbFile.getAtoms();
-        //Get rid of old stuff
-        structureGroup.getChildren().clear();
-
-        //Initialize every residue
-        Guanine guanine = new Guanine();
-        Adenine adenine = new Adenine();
-        Cytosine cytosine = new Cytosine();
-        Uracil uracil = new Uracil();
-        Ribose ribose = new Ribose();
-
-        //Starting values
-        String currentBase = atoms[0].getBase();
-        int resdiueNumber = atoms[0].getResidueNumber();
-        int counter = 0;
-        Point3D origin = null;
-        /*
-        Create spheres for every phosphate atom and add them to structure
-        Add connections between the phosphates and add them as well
-         */
-        for (Atom atom : atoms) {
-            if (atom.getElement().equals("P")){
-                Phosphate phosphate = new Phosphate();
-                //Install tooltip
-                Tooltip tooltip = new Tooltip(atom.getBase() + atom.getResidueNumber());
-                tooltip.install(phosphate, tooltip);
-                //position the phosphate and add it to structureGroup
-                phosphate.setTranslateX(atom.getCoordinates()[0]);
-                phosphate.setTranslateY(atom.getCoordinates()[1]);
-                phosphate.setTranslateZ(atom.getCoordinates()[2]);
-                this.structureGroup.getChildren().add(phosphate);
-
-                //Make connection
-                if (counter >= 1){
-                    Point3D target = atom.getPoint();
-                    Cylinder cylinder = createConnection(origin, target);
-                    this.structureGroup.getChildren().add(cylinder);
-                }
-                //update variables
-                origin = atom.getPoint();
-                counter++;
-            }
-        }
-
-        //Connect all phosphates with sugars
-        connectPhosphatesWithSugars(atoms);
-
-        //Connect all bases with sugars
-        connectBasesWithSugars(atoms);
-        counter = 0;
-        /*
-        CREATE MESH VIEWS FOR ALL BASES AND SUGARS
-         */
-        for (Atom atom : atoms) {
-            //If Atom is part of the structure, make a Sphere representation and add it to the Structure group
-            if (atom.isPartOfStructure()) {structureGroup.getChildren().add(atom.getAtomSphere());}
-
-            //Check if base has changed or if last element is reached
-            //If not, add coordinates of each atom to the corresponding base
-            if (atom.getResidueNumber() == resdiueNumber && (!atom.equals(atoms[atoms.length-1]))){
-                cytosine.fillCoordinates(atom);
-                adenine.fillCoordinates(atom);
-                guanine.fillCoordinates(atom);
-                uracil.fillCoordinates(atom);
-                ribose.fillCoordinates(atom);
-            } else{
-                //NEW BASE REACHED OR EOF
-                //Add the right base to the view
-                //Make Tooltips, set Materials
-                switch (currentBase){
-                    case "C":
-                        cytosine.setMaterial(cytosineMaterial);
-                        ribose.setMaterial(cytosineMaterial);
-                        cytosine.makeMesh();
-                        structureGroup.getChildren().add(cytosine.getMeshView());
-                        nucleotides[counter] = cytosine.getMeshView() ;
-                        ribose.makeTooltip(cytosine.getNucleotideInfo());
-                        cytosine = new Cytosine();
-                        break;
-                    case "G":
-                        guanine.setMaterial(guanineMaterial);
-                        ribose.setMaterial(guanineMaterial);
-                        guanine.makeMesh();
-                        structureGroup.getChildren().add(guanine.getMeshView());
-                        nucleotides[counter] = guanine.getMeshView();
-                        ribose.makeTooltip(guanine.getNucleotideInfo());
-                        guanine = new Guanine();
-                        break;
-                    case "U":
-                        uracil.setMaterial(uracilMaterial);
-                        ribose.setMaterial(uracilMaterial);
-                        uracil.makeMesh();
-                        structureGroup.getChildren().add(uracil.getMeshView());
-                        nucleotides[counter] = uracil.getMeshView();
-                        ribose.makeTooltip(uracil.getNucleotideInfo());
-                        uracil = new Uracil();
-                        break;
-                    case "A":
-                        adenine.setMaterial(adenineMaterial);
-                        ribose.setMaterial(adenineMaterial);
-                        adenine.makeMesh();
-                        structureGroup.getChildren().add(adenine.getMeshView());
-                        nucleotides[counter] = adenine.getMeshView();
-                        ribose.makeTooltip(adenine.getNucleotideInfo());
-                        adenine = new Adenine();
-                        break;
-                    default: break;
-                }
-
-                //Make Mesh for ribose
-                ribose.makeMesh();
-                structureGroup.getChildren().add(ribose.getMeshView());
-
-                //Update values and bases
-                counter++;
-                ribose = new Ribose();
-                currentBase = atom.getBase();
-                resdiueNumber = atom.getResidueNumber();
-                cytosine.fillCoordinates(atom);
-                adenine.fillCoordinates(atom);
-                guanine.fillCoordinates(atom);
-                uracil.fillCoordinates(atom);
-                ribose.fillCoordinates(atom);
-            }
-        }
-    }
-
-    /**
-     * Create a 3D cylinder that connects to points
-     * Code taken from: Rahel Lüthy, www.netzwerg.ch
-     * @param origin
-     * @param target
-     * @return
-     */
-    public Cylinder createConnection(Point3D origin, Point3D target){
-        Point3D yAxis = new Point3D(0, 1, 0);
-        Point3D diff = target.subtract(origin);
-        double height = diff.magnitude();
-
-        Point3D mid = target.midpoint(origin);
-        Translate moveToMidpoint = new Translate(mid.getX(), mid.getY(), mid.getZ());
-
-        Point3D axisOfRotation = diff.crossProduct(yAxis);
-        double angle = Math.acos(diff.normalize().dotProduct(yAxis));
-        Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
-
-        Cylinder line = new Cylinder(0.3, height);
-        line.setMaterial(new PhongMaterial(Color.LIGHTGOLDENRODYELLOW));
-
-        line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
-
-        return line;
-    }
-
-    /**
-     * Create a thinner connection between phosphate and sugars
-     * COLOR: BLUE
-     * @param origin
-     * @param target
-     * @return
-     */
-    public Cylinder createSugarConnection(Point3D origin, Point3D target) {
-        Point3D yAxis = new Point3D(0, 1, 0);
-        Point3D diff = target.subtract(origin);
-        double height = diff.magnitude();
-
-        Point3D mid = target.midpoint(origin);
-        Translate moveToMidpoint = new Translate(mid.getX(), mid.getY(), mid.getZ());
-
-        Point3D axisOfRotation = diff.crossProduct(yAxis);
-        double angle = Math.acos(diff.normalize().dotProduct(yAxis));
-        Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
-
-        Cylinder line = new Cylinder(0.1, height);
-        line.setMaterial(new PhongMaterial(Color.LIGHTCYAN));
-
-        line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
-
-        return line;
-    }
-
-    /*
-Connect all Phosphates with the right sugars
- */
-    private void connectPhosphatesWithSugars(Atom[] atoms){
-        Point3D cThreePrime = null;
-        Point3D cThreePrimeOld = null;
-        Point3D cFourPrime = null;
-        Point3D cFifePrime = null;
-        Point3D phosphate = null;
-        Cylinder cylinder = null;
-        int resideNumber = 1;
-        //Go through all atoms
-        for (Atom atom : atoms) {
-            //If new residue is reached, make connections
-            if (atom.getResidueNumber() > resideNumber && resideNumber > 2){
-                cylinder = createSugarConnection(phosphate, cFifePrime);
-                this.structureGroup.getChildren().add(cylinder);
-                cylinder = createSugarConnection(cFifePrime, cFourPrime);
-                this.structureGroup.getChildren().add(cylinder);
-                if (cThreePrimeOld != null) {
-                    cylinder = createSugarConnection(cThreePrimeOld, phosphate);
-                    this.structureGroup.getChildren().add(cylinder);
-                }
-            }
-            //Save necessary 3D points of atoms that are connected
-            switch (atom.getIdentity()){
-                case "C3'":
-                    cThreePrimeOld = cThreePrime;
-                    cThreePrime = atom.getPoint();
-                    break;
-                case "C4'":
-                    cFourPrime = atom.getPoint();
-                    break;
-                case "C5'":
-                    cFifePrime = atom.getPoint();
-                    break;
-                case "P":
-                    phosphate = atom.getPoint();
-                    break;
-                default: break;
-            }
-            //Update current residue number
-            resideNumber = atom.getResidueNumber();
-        }
-    }
-
-    /**
-     * Connect all bases with the corresponding sugars
-     * @param atoms
-     */
-    private void connectBasesWithSugars(Atom[] atoms){
-        Point3D cOnePrime = null;
-        Point3D guanineAtom = null;
-        Point3D adenineAtom = null;
-        Point3D uracilAtom = null;
-        Point3D cytosineAtom = null;
-        int residueNumber = atoms[0].getResidueNumber();
-        String residueType = atoms[0].getBase();
-        Cylinder cylinder = null;
-
-        //Go through all atoms of molecule
-        for (Atom atom : atoms) {
-            //If new nucleotide is reached, create a connection
-            if (residueNumber != atom.getResidueNumber()){
-                switch (residueType){
-                    case "G":
-                        cylinder = createSugarConnection(cOnePrime, guanineAtom);
-                        break;
-                    case "A":
-                        cylinder = createSugarConnection(cOnePrime, adenineAtom);
-                        break;
-                    case "C":
-                        cylinder = createSugarConnection(cOnePrime, cytosineAtom);
-                        break;
-                    case "U":
-                        cylinder = createSugarConnection(cOnePrime, uracilAtom);
-                        break;
-                    default:
-                        System.out.println("No matching residue type");
-                        break;
-                }
-                this.structureGroup.getChildren().add(cylinder);
-            }
-            switch (atom.getIdentity()){
-                case "C1'":
-                    cOnePrime = atom.getPoint();
-                    break;
-                case "N9":
-                    guanineAtom = atom.getPoint();
-                    adenineAtom = atom.getPoint();
-                    break;
-                case "N1":
-                    cytosineAtom = atom.getPoint();
-                    uracilAtom = atom.getPoint();
-                default: break;
-            }
-            //Update residueNumber and residueType for next iteration
-            residueNumber = atom.getResidueNumber();
-            residueType = atom.getBase();
-        }
-    }
 
     /*
     Color all nucleotides differently and make the molecules again
@@ -496,7 +186,9 @@ Connect all Phosphates with the right sugars
         cytosineMaterial.setDiffuseColor(Color.BLUE);
         guanineMaterial.setDiffuseColor(Color.YELLOW);
     }
-
+    /*
+    Bring structure back to center
+     */
     public void centerStructure(){
         cameraTranslate.setZ(CAMERA_CENTER_Z);
         cameraRotateX.setAngle(0);

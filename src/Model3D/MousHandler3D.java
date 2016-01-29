@@ -3,6 +3,7 @@ package Model3D;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 
@@ -16,7 +17,7 @@ public class MousHandler3D {
     private static double mousePosX, mousePosY;
 
 
-    public static void addMouseHandler(AnchorPane structurePane, Group structureGroup, Rotate cameraRotateX, Rotate cameraRotateY, Translate cameraTranslate) {
+    public static void addMouseHandler(Pane structurePane, Group structureGroup, Rotate cameraRotateX, Rotate cameraRotateY, Translate cameraTranslate) {
 
     //Save position if mouse is pressed
     structurePane.setOnMousePressed(event-> {

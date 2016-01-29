@@ -44,7 +44,7 @@ public class Presenter {
     private Atom[] atoms;
 
     //3D structure pane
-    private AnchorPane structurePane;
+    private Pane structurePane;
 
     //2D structure pane
     Pane secondaryStructurePane;
@@ -91,12 +91,9 @@ public class Presenter {
      */
     public void setUp3DStructure(){
         presenter3D.setAtoms(this.atoms);
-        presenter3D.makeMolecules();
+        presenter3D.make3DStructure();
         structurePane.getChildren().clear();
         structurePane.getChildren().add(presenter3D.subScene);
-        structurePane.setRightAnchor(presenter3D.subScene, 0.0);
-        structurePane.setLeftAnchor(presenter3D.subScene, 0.0);
-
     }
 
     /*
@@ -137,11 +134,11 @@ public class Presenter {
     }
 
 
-    public AnchorPane getStructurePane() {
+    public Pane getStructurePane() {
         return structurePane;
     }
 
-    public void setStructurePane(AnchorPane structurePane) {
+    public void setStructurePane(Pane structurePane) {
         this.structurePane = structurePane;
     }
 }

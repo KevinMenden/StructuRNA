@@ -9,7 +9,7 @@ import javafx.scene.paint.PhongMaterial;
 public class HbondConstants {
 
     //Maximal distance for hydrogen bonds
-    public static final double MAXIMAL_DISTANCE = 4.0;
+    public static final double MAXIMAL_DISTANCE = 3.5;
 
     //Minimal Angle for N-H-N hydrogen bonds
     public static final double MINIMAL_ANGLE = 110.0;
