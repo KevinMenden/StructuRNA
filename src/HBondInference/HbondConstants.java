@@ -15,7 +15,7 @@ public class HbondConstants {
     public static final double MINIMAL_ANGLE = 110.0;
 
     //Material for hbonds
-    public final static PhongMaterial hBondMaterial = new PhongMaterial(Color.RED);
+    public final static PhongMaterial hBondMaterial = new PhongMaterial(Color.web("#0011FF30"));
 
 
 }

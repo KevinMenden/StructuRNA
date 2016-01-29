@@ -35,9 +35,9 @@
         </menus>
       </MenuBar>
       <TextField fx:id="sequenceField" editable="false" style="-fx-highlight-fill: lightgray; -fx-highlight-text-fill: firebrick;" />
-      <SplitPane fx:id="vertSplitPane" dividerPositions="0.5" VBox.vgrow="ALWAYS">
+      <SplitPane fx:id="vertSplitPane" dividerPositions="0.6416337285902504" VBox.vgrow="ALWAYS">
          <items>
-            <Pane fx:id="structurePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: black;">
+            <Pane fx:id="structurePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white;">
                <cursor>
                   <Cursor fx:constant="HAND" />
                </cursor>
@@ -52,7 +52,7 @@
                            </font></TextArea>
                      </children>
                   </AnchorPane>
-                  <Pane fx:id="secondaryStructure" style="-fx-background-color: black;" />
+                  <Pane fx:id="secondaryStructure" style="-fx-background-color: white;" />
               </items>
             </SplitPane>
          </items>

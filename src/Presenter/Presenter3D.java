@@ -98,7 +98,7 @@ public class Presenter3D {
         //Initialize SubScene and camera
 
         subScene = new SubScene(structureGroup, 426, 553, true, SceneAntialiasing.BALANCED);
-        subScene.setFill(Color.BLACK);
+        subScene.setFill(Color.WHITE);
         camera = new PerspectiveCamera(true);
         camera.setFarClip(10000.0);
         camera.setNearClip(0.1);

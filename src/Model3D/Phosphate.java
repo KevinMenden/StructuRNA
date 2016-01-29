@@ -11,7 +11,7 @@ public class Phosphate extends Sphere {
 
     private final double PHOSPHATE_RADIUS = 1;
     private PhongMaterial phosphateMaterial = new PhongMaterial();
-    private Color diffuseColor = Color.DARKKHAKI;
+    private Color diffuseColor = Color.BROWN;
     private Color specularColor = Color.LIGHTCYAN;
 
     public Phosphate(){

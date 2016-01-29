@@ -2,6 +2,7 @@ package HBondInference;
 
 import PDBParser.Atom;
 import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.Sphere;
 
 import java.util.ArrayList;
 
@@ -24,16 +25,20 @@ public class HydrogonBonds {
     //Sequence of the molecule
     private String sequence = "";
 
+    //Sequence length
+    private int sequenceLength;
+
     //ArrayList of hbonds
     private ArrayList<Cylinder> hbonds;
-    public ArrayList<Cylinder> getHbonds() {return hbonds;}
 
-    public void setAtoms(Atom[] atoms) {
-        this.atoms = atoms;
-    }
+    //ArrayList of hbond building atoms
+    private ArrayList<Sphere> bondAtoms;
 
-    public void setSequence(String sequence) {
-        this.sequence = sequence;
+    //ArrayList of atom connections
+    private ArrayList<Cylinder> hbondAtomConnections;
+
+    public HydrogonBonds(int sequenceLength){
+        this.sequenceLength = sequenceLength;
     }
 
     /**
@@ -44,12 +49,12 @@ public class HydrogonBonds {
      */
     public String inferHydrogenBonds(Atom[] atoms){
         //make a sequence of dots
-        StringBuilder dotBracket = new StringBuilder(sequence.length());
-        for (int i = 0; i < sequence.length(); i++){
+        StringBuilder dotBracket = new StringBuilder(sequenceLength);
+        for (int i = 0; i < sequenceLength; i++){
             dotBracket.append(".");
         }
         //Array of HBondBuilers
-        HBondBuilder[] hBondBuilders = new HBondBuilder[sequence.length()];
+        HBondBuilder[] hBondBuilders = new HBondBuilder[sequenceLength];
         HBondBuilder generalBuilder = new HBondBuilder();
 
         //For all nucleotides, save the elements necessar for H bond infrence
@@ -69,9 +74,11 @@ public class HydrogonBonds {
                 hBondBuilders[index].setResdieNumber(atom.getResidueNumber());
             }
             currentReside = atom.getResidueNumber();
+            hBondBuilders[index].setAtom(atom);
+            /*
             if (isHbondBuilderAtom(atom)) {
                 hBondBuilders[index].setAtom(atom);
-            }
+            }*/
         }
 
         //Iterate through HBondBuilder array and infer Hbonds
@@ -99,6 +106,8 @@ public class HydrogonBonds {
             indexOne++;
         }
         this.hbonds = generalBuilder.getHbonds();
+        this.bondAtoms = generalBuilder.getBondAtoms();
+        this.hbondAtomConnections = generalBuilder.getBondAtomConnections();
         this.dotBracket = dotBracket.toString();
         return dotBracket.toString();
     }
@@ -214,5 +223,55 @@ public class HydrogonBonds {
     }
 
 
+    public Atom[] getAtoms() {
+        return atoms;
+    }
 
+    public void setHbonds(ArrayList<Cylinder> hbonds) {
+        this.hbonds = hbonds;
+    }
+
+    public void setBondAtoms(ArrayList<Sphere> bondAtoms) {
+        this.bondAtoms = bondAtoms;
+    }
+
+    public String getDotBracket() {
+        return dotBracket;
+    }
+
+    public void setDotBracket(String dotBracket) {
+        this.dotBracket = dotBracket;
+    }
+
+    public String getSequence() {
+        return sequence;
+    }
+
+    public int getSequenceLength() {
+        return sequenceLength;
+    }
+
+    public void setSequenceLength(int sequenceLength) {
+        this.sequenceLength = sequenceLength;
+    }
+
+    public ArrayList<Sphere> getBondAtoms() {return bondAtoms;}
+
+    public void setAtoms(Atom[] atoms) {
+        this.atoms = atoms;
+    }
+
+    public void setSequence(String sequence) {
+        this.sequence = sequence;
+    }
+
+    public ArrayList<Cylinder> getHbonds() {return hbonds;}
+
+    public ArrayList<Cylinder> getHbondAtomConnections() {
+        return hbondAtomConnections;
+    }
+
+    public void setHbondAtomConnections(ArrayList<Cylinder> hbondAtomConnections) {
+        this.hbondAtomConnections = hbondAtomConnections;
+    }
 }

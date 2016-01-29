@@ -76,8 +76,7 @@ public class Presenter {
         //Make the secondary structure
         //Infer base pairing from PDB file
         presenter2D.setPdbFile(pdbFile);
-        HydrogonBonds hydrogonBonds = new HydrogonBonds();
-        hydrogonBonds.setSequence(sequence);
+        HydrogonBonds hydrogonBonds = new HydrogonBonds(sequence.length());
         System.out.println(hydrogonBonds.inferHydrogenBonds(presenter3D.getAtoms()));
         presenter2D.buildSecondaryStructureGraph(hydrogonBonds.inferHydrogenBonds(atoms));
         secondaryStructurePane.getChildren().clear();

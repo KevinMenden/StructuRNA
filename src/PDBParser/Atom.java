@@ -75,7 +75,7 @@ public class Atom {
         atomSphere.setMaterial(atomMaterial);
         switch (this.element){
             case "H":
-                atomMaterial.setDiffuseColor(Color.WHITESMOKE); break;
+            atomMaterial.setDiffuseColor(Color.WHITESMOKE); break;
             case "O":
                 atomMaterial.setDiffuseColor(Color.RED); break;
             case "N":
@@ -87,6 +87,34 @@ public class Atom {
             default:break;
         }
 
+        return atomSphere;
+    }
+
+    /*
+    Can be used to construct atom represations when given a
+    - Point3D
+    - element identifier
+     */
+    public static Sphere makeAtomSphere(String element, Point3D point3D){
+        Sphere atomSphere = new Sphere(0.12);
+        PhongMaterial atomMaterial = new PhongMaterial(Color.BLACK);
+        atomSphere.setMaterial(atomMaterial);
+        atomSphere.setTranslateX(point3D.getX());
+        atomSphere.setTranslateY(point3D.getY());
+        atomSphere.setTranslateZ(point3D.getZ());
+        switch (element){
+            case "H":
+                atomMaterial.setDiffuseColor(Color.WHITESMOKE); break;
+            case "O":
+                atomMaterial.setDiffuseColor(Color.RED); break;
+            case "N":
+                atomMaterial.setDiffuseColor(Color.BLUE); break;
+            case "P":
+                atomMaterial.setDiffuseColor(Color.BLACK); break;
+            case "C":
+                atomMaterial.setDiffuseColor(Color.GRAY); break;
+            default:break;
+        }
         return atomSphere;
     }
 

@@ -1,5 +1,6 @@
 package Model3D;
 
+import HBondInference.HydrogonBonds;
 import PDBParser.Atom;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -8,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 
@@ -24,8 +26,8 @@ public class MoleculeAssembler {
     private PhongMaterial cytosineMaterial = new PhongMaterial(Color.BLUE);
     private PhongMaterial guanineMaterial = new PhongMaterial(Color.YELLOW);
     //Materials for connections
-    private PhongMaterial phosphateConnectionMaterial = new PhongMaterial(Color.LIGHTGRAY);
-    private PhongMaterial sugarConnectionMaterial = new PhongMaterial(Color.ANTIQUEWHITE);
+    private PhongMaterial phosphateConnectionMaterial = new PhongMaterial(Color.LIGHTGOLDENRODYELLOW);
+    private PhongMaterial sugarConnectionMaterial = new PhongMaterial(Color.DARKCYAN);
 
     //The Group in with all the molecules
     private Group structureGroup = new Group();
@@ -195,6 +197,18 @@ public class MoleculeAssembler {
                 ribose.fillCoordinates(atom);
             }
         }
+        HydrogonBonds hydrogonBonds = new HydrogonBonds(sequenceLength);
+        hydrogonBonds.inferHydrogenBonds(this.atoms);
+        ArrayList<Cylinder> hbonds = hydrogonBonds.getHbonds();
+        for (Cylinder cylinder : hbonds){
+            structureGroup.getChildren().add(cylinder);
+        }
+        for (Sphere sphere : hydrogonBonds.getBondAtoms()){
+            structureGroup.getChildren().add(sphere);
+        }
+        for (Cylinder c : hydrogonBonds.getHbondAtomConnections()){
+            structureGroup.getChildren().add(c);
+        }
     }
 
     /**
@@ -205,23 +219,7 @@ public class MoleculeAssembler {
      * @return
      */
     public Cylinder createConnection(Point3D origin, Point3D target){
-        Point3D yAxis = new Point3D(0, 1, 0);
-        Point3D diff = target.subtract(origin);
-        double height = diff.magnitude();
-
-        Point3D mid = target.midpoint(origin);
-        Translate moveToMidpoint = new Translate(mid.getX(), mid.getY(), mid.getZ());
-
-        Point3D axisOfRotation = diff.crossProduct(yAxis);
-        double angle = Math.acos(diff.normalize().dotProduct(yAxis));
-        Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
-
-        Cylinder line = new Cylinder(0.3, height);
-        line.setMaterial(phosphateConnectionMaterial);
-
-        line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
-
-        return line;
+        return Line3D.makeLine3D(origin, target, phosphateConnectionMaterial, 0.3);
     }
 
     /**
@@ -232,23 +230,7 @@ public class MoleculeAssembler {
      * @return
      */
     public Cylinder createSugarConnection(Point3D origin, Point3D target) {
-        Point3D yAxis = new Point3D(0, 1, 0);
-        Point3D diff = target.subtract(origin);
-        double height = diff.magnitude();
-
-        Point3D mid = target.midpoint(origin);
-        Translate moveToMidpoint = new Translate(mid.getX(), mid.getY(), mid.getZ());
-
-        Point3D axisOfRotation = diff.crossProduct(yAxis);
-        double angle = Math.acos(diff.normalize().dotProduct(yAxis));
-        Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
-
-        Cylinder line = new Cylinder(0.1, height);
-        line.setMaterial(sugarConnectionMaterial);
-
-        line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
-
-        return line;
+        return Line3D.makeLine3D(origin, target, sugarConnectionMaterial, 0.05);
     }
 
     /*

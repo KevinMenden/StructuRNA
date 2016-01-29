@@ -1,10 +1,13 @@
 package HBondInference;
 
+import Model3D.Line3D;
 import PDBParser.Atom;
 import javafx.geometry.Point3D;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
-import javafx.scene.transform.Rotate;
-import javafx.scene.transform.Translate;
+import javafx.scene.shape.Sphere;
+
 
 import java.util.ArrayList;
 
@@ -31,26 +34,29 @@ public class HBondBuilder {
     private Point3D H3;
     private Point3D H1;
     private Point3D H41;
+    private Point3D C4;
+    private Point3D C6;
+    private Point3D C2;
+
+
+    //stings
+    private String nitrogen = "N";
+    private String oxygen = "O";
+    private String hydrogen = "H";
 
     //ArrayList of hbonds
     private ArrayList<Cylinder> hbonds = new ArrayList<>();
-    public ArrayList<Cylinder> getHbonds() {        return hbonds;    }
+
+    //ArrayList of bond building atoms
+    private ArrayList<Sphere> bondAtoms = new ArrayList<>();
+
+    //ArrayList connecting the bond building atoms to the structure
+    private ArrayList<Cylinder> bondAtomConnections = new ArrayList<>();
 
     //Base type and residueNumber with their getters and setter
     String baseType;
     int resdieNumber;
-    public int getResdieNumber() {
-        return resdieNumber;
-    }
-    public void setResdieNumber(int resdieNumber) {
-        this.resdieNumber = resdieNumber;
-    }
-    public String getBaseType() {
-        return baseType;
-    }
-    public void setBaseType(String baseType) {
-        this.baseType = baseType;
-    }
+
 
     Exception NucleotideNotSetExeption = new NullPointerException();
 
@@ -89,6 +95,12 @@ public class HBondBuilder {
                 H1 =atom.getPoint(); break;
             case "H41":
                 H41 = atom.getPoint(); break;
+            case "C4":
+                C4 = atom.getPoint(); break;
+            case "C6":
+                C6 = atom.getPoint(); break;
+            case "C2":
+                C2 = atom.getPoint(); break;
             default:break;
         }
     }
@@ -139,8 +151,7 @@ public class HBondBuilder {
                 if (angle >= HbondConstants.MINIMAL_ANGLE) {
                     bool = true;
                     System.out.println("Hbond between " + adenine.getResdieNumber() + " and " + uracil.getResdieNumber() + "\t Angle1: " + angle);
-                    hbonds.add(makeHydrogenBond(adenine.getN1(), uracil.getH3()));
-                    hbonds.add(makeHydrogenBond(adenine.getH62(), uracil.getO4()));
+                    addBondsAndAtomsAU(adenine, uracil);
                 }
             }
         }
@@ -165,9 +176,7 @@ public class HBondBuilder {
                     if (angle >= HbondConstants.MINIMAL_ANGLE) {
                         bool = true;
                         System.out.println("Hbond between " + cytosine.getResdieNumber() + " and " + guanine.getResdieNumber() + " Angle: \t" + angle);
-                        hbonds.add(makeHydrogenBond(guanine.getO6(), cytosine.getH41()));
-                        hbonds.add(makeHydrogenBond(guanine.getH1(), cytosine.getN3()));
-                        hbonds.add(makeHydrogenBond(guanine.getH21(), cytosine.getO2()));
+                        addBondsAndAtomsGC(guanine, cytosine);
                     }
                 }
             }
@@ -175,28 +184,58 @@ public class HBondBuilder {
 
         return bool;
     }
+    /*
+    Add bonds and atoms for GC hydrogen bonds
+     */
+    private void addBondsAndAtomsGC(HBondBuilder guanine, HBondBuilder cytosine){
+        //Make hydrogen bond cylinder
+        hbonds.add(makeHydrogenBond(guanine.getO6(), cytosine.getH41()));
+        hbonds.add(makeHydrogenBond(guanine.getH1(), cytosine.getN3()));
+        hbonds.add(makeHydrogenBond(guanine.getH21(), cytosine.getO2()));
+        //Add hydrogen building atoms
+        bondAtoms.add(Atom.makeAtomSphere(oxygen, guanine.getO6()));
+        bondAtoms.add(Atom.makeAtomSphere(hydrogen, cytosine.getH41()));
+        bondAtoms.add(Atom.makeAtomSphere(hydrogen, guanine.getH1()));
+        bondAtoms.add(Atom.makeAtomSphere(nitrogen, cytosine.getN3()));
+        bondAtoms.add(Atom.makeAtomSphere(hydrogen, guanine.getH21()));
+        bondAtoms.add(Atom.makeAtomSphere(oxygen, cytosine.getO2()));
+        //Connect atoms with molecule
+        bondAtomConnections.add(makeAtomConnection(cytosine.getC4(), cytosine.getN4()));
+        bondAtomConnections.add(makeAtomConnection(cytosine.getN4(), cytosine.getH41()));
+        bondAtomConnections.add(makeAtomConnection(guanine.getC6(), guanine.getO6()));
+        bondAtomConnections.add(makeAtomConnection(guanine.getN1(), guanine.getH1()));
+        bondAtomConnections.add(makeAtomConnection(cytosine.getC2(), cytosine.getO2()));
+        bondAtomConnections.add(makeAtomConnection(guanine.getC2(), guanine.getN2()));
+        bondAtomConnections.add(makeAtomConnection(guanine.getN2(), guanine.getH21()));
+    }
+
+    /*
+    Add bonds and atoms for AU hydrogen bonds
+     */
+    private void addBondsAndAtomsAU(HBondBuilder adenine, HBondBuilder uracil){
+        //Make hydrogen bond cylinder
+        hbonds.add(makeHydrogenBond(adenine.getN1(), uracil.getH3()));
+        hbonds.add(makeHydrogenBond(adenine.getH62(), uracil.getO4()));
+        //make hydrogen bond building atoms
+        bondAtoms.add(Atom.makeAtomSphere(nitrogen, adenine.getN1()));
+        bondAtoms.add(Atom.makeAtomSphere(hydrogen, uracil.getH3()));
+        bondAtoms.add(Atom.makeAtomSphere(hydrogen, adenine.getH62()));
+        bondAtoms.add(Atom.makeAtomSphere(oxygen, uracil.getO4()));
+        bondAtomConnections.add(makeAtomConnection(uracil.getC4(), uracil.getO4()));
+        bondAtomConnections.add(makeAtomConnection(uracil.getN3(), uracil.getH3()));
+        bondAtomConnections.add(makeAtomConnection(adenine.getN6(), adenine.getH62()));
+        bondAtomConnections.add(makeAtomConnection(adenine.getC6(), adenine.getN6()));
+    }
 
     /**
      * Create hydrogen bonds shape from two points
      */
     private Cylinder makeHydrogenBond(Point3D origin, Point3D target){
-        Point3D yAxis = new Point3D(0, 1, 0);
-        Point3D diff = target.subtract(origin);
-        double height = diff.magnitude();
-
-        Point3D mid = target.midpoint(origin);
-        Translate moveToMidpoint = new Translate(mid.getX(), mid.getY(), mid.getZ());
-
-        Point3D axisOfRotation = diff.crossProduct(yAxis);
-        double angle = Math.acos(diff.normalize().dotProduct(yAxis));
-        Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
-
-        Cylinder line = new Cylinder(0.1, height);
-        line.setMaterial(HbondConstants.hBondMaterial);
-        line.setOpacity(0.7);
-        line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
-
-        return line;
+        return Line3D.makeLine3D(origin, target, HbondConstants.hBondMaterial, 0.1);
+    }
+    //Connect two atoms
+    private Cylinder makeAtomConnection(Point3D origin, Point3D target){
+        return Line3D.makeLine3D(origin, target, new PhongMaterial(Color.DARKCYAN), 0.05);
     }
 
     /*
@@ -313,4 +352,41 @@ public class HBondBuilder {
     public void setN6(Point3D n6) {
         N6 = n6;
     }
+
+    public Point3D getC4() {        return C4;    }
+
+    public void setC4(Point3D c4) {        C4 = c4;    }
+
+    public Point3D getC2() {        return C2;    }
+
+    public void setC2(Point3D c2) {        C2 = c2;    }
+
+    public Point3D getC6() {        return C6;    }
+
+    public void setC6(Point3D c6) {        C6 = c6;    }
+
+    public int getResdieNumber() {
+        return resdieNumber;
+    }
+    public void setResdieNumber(int resdieNumber) {
+        this.resdieNumber = resdieNumber;
+    }
+    public String getBaseType() {
+        return baseType;
+    }
+    public void setBaseType(String baseType) {
+        this.baseType = baseType;
+    }
+    public ArrayList<Sphere> getBondAtoms() {        return bondAtoms;    }
+    public ArrayList<Cylinder> getHbonds() {return hbonds;}
+
+    public ArrayList<Cylinder> getBondAtomConnections() {
+        return bondAtomConnections;
+    }
+
+    public void setBondAtomConnections(ArrayList<Cylinder> bondAtomConnections) {
+        this.bondAtomConnections = bondAtomConnections;
+    }
+
+
 }
