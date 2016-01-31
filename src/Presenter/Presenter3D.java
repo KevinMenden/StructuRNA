@@ -98,7 +98,7 @@ public class Presenter3D {
         //Initialize SubScene and camera
 
         subScene = new SubScene(structureGroup, 426, 553, true, SceneAntialiasing.BALANCED);
-        subScene.setFill(Color.WHITE);
+        subScene.setFill(Color.BLACK);
         camera = new PerspectiveCamera(true);
         camera.setFarClip(10000.0);
         camera.setNearClip(0.1);
@@ -113,6 +113,37 @@ public class Presenter3D {
         //Set up handling of the structure
         MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
 
+    }
+
+    //NOTE WORKING  - MIGHT GET IMPLEMENTED
+    public void makeBallAndStickModel(){
+        //Assemble the molecules
+        moleculeAssembler = new MoleculeAssembler(this.atoms, this.sequenceLength);
+        moleculeAssembler.setAdenineMaterial(adenineMaterial);
+        moleculeAssembler.setGuanineMaterial(guanineMaterial);
+        moleculeAssembler.setCytosineMaterial(cytosineMaterial);
+        moleculeAssembler.setUracilMaterial(uracilMaterial);
+        moleculeAssembler.assembleBallAndStickModel();
+        this.structureGroup = moleculeAssembler.getStructureGroup();
+        //this.nucleotides = moleculeAssembler.getNucleotides();
+
+        //Initialize SubScene and camera
+
+        subScene = new SubScene(structureGroup, 426, 553, true, SceneAntialiasing.BALANCED);
+        subScene.setFill(Color.WHITE);
+        camera = new PerspectiveCamera(true);
+        camera.setFarClip(10000.0);
+        camera.setNearClip(0.1);
+        //Add Transforms to stucture and camera
+        structureGroup.getTransforms().addAll(cameraRotateX, cameraRotateY);
+        camera.getTransforms().addAll(cameraTranslate);
+        subScene.setCamera(camera);
+        //Bind subscene to its pane
+        subScene.widthProperty().bind(structurePane.widthProperty());
+        subScene.heightProperty().bind(structurePane.heightProperty());
+
+        //Set up handling of the structure
+        MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
     }
 
 

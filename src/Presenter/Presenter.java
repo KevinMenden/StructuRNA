@@ -91,6 +91,7 @@ public class Presenter {
     public void setUp3DStructure(){
         presenter3D.setAtoms(this.atoms);
         presenter3D.make3DStructure();
+        //presenter3D.makeBallAndStickModel();
         structurePane.getChildren().clear();
         structurePane.getChildren().add(presenter3D.subScene);
     }

@@ -59,16 +59,38 @@ public class MoleculeAssembler {
         centerAllAtoms(this.atoms);
     }
 
+
+    public void assembleBallAndStickModel(){
+        int residueNumber = atoms[0].getResidueNumber();
+
+        Guanine guanine = new Guanine();
+
+        for (Atom a : atoms) {
+            if (a.getResidueNumber() == residueNumber && (!a.equals(atoms[atoms.length - 1]))) {
+                if (a.getBase().equals("G")) guanine.setAtom(a);
+            }
+            /*guanine.makeAtomConnections();
+            for (Cylinder c : guanine.getAtomConnections()){
+                structureGroup.getChildren().add(c);
+            }*/
+            for (Sphere s : guanine.getAtomList()){
+                structureGroup.getChildren().add(s);
+            }
+            residueNumber = a.getResidueNumber();
+
+
+        }
+
+    }
+
     /**
      * For every molecule in the PDB file make a shape and add it
      * to the group
      * Returns the group with all molecules in it
      */
     public void assembleMolecules(){
-        //Center all atom coordinates
-        //centerAllAtoms(this.atoms);
 
-        //SET UP ARRAY - TESTING STAGE
+        //Set up array for selection model
         nucleotides = new MoleculeMesh[this.sequenceLength];
 
 
@@ -142,40 +164,48 @@ public class MoleculeAssembler {
                 //Add the right base to the view
                 //Make Tooltips, set Materials
                 switch (currentBase){
+                    case "CCC":
                     case "C":
                         cytosine.setMaterial(cytosineMaterial);
                         ribose.setMaterial(cytosineMaterial);
                         cytosine.makeMesh();
                         structureGroup.getChildren().add(cytosine.getMeshView());
                         nucleotides[counter] = cytosine.getMeshView() ;
-                        ribose.makeTooltip(cytosine.getNucleotideInfo());
+                        cytosine.makeTooltip(currentBase + Integer.toString(counter+1));
+                        ribose.makeTooltip(currentBase + Integer.toString(counter+1));
                         cytosine = new Cytosine();
                         break;
+                    case "GGG":
                     case "G":
                         guanine.setMaterial(guanineMaterial);
                         ribose.setMaterial(guanineMaterial);
                         guanine.makeMesh();
                         structureGroup.getChildren().add(guanine.getMeshView());
                         nucleotides[counter] = guanine.getMeshView();
-                        ribose.makeTooltip(guanine.getNucleotideInfo());
+                        guanine.makeTooltip(currentBase + Integer.toString(counter+1));
+                        ribose.makeTooltip(currentBase + Integer.toString(counter+1));
                         guanine = new Guanine();
                         break;
+                    case "UUU":
                     case "U":
                         uracil.setMaterial(uracilMaterial);
                         ribose.setMaterial(uracilMaterial);
                         uracil.makeMesh();
                         structureGroup.getChildren().add(uracil.getMeshView());
                         nucleotides[counter] = uracil.getMeshView();
-                        ribose.makeTooltip(uracil.getNucleotideInfo());
+                        ribose.makeTooltip(currentBase + Integer.toString(counter+1));
+                        uracil.makeTooltip(currentBase + Integer.toString(counter+1));
                         uracil = new Uracil();
                         break;
+                    case "AAA":
                     case "A":
                         adenine.setMaterial(adenineMaterial);
                         ribose.setMaterial(adenineMaterial);
                         adenine.makeMesh();
                         structureGroup.getChildren().add(adenine.getMeshView());
                         nucleotides[counter] = adenine.getMeshView();
-                        ribose.makeTooltip(adenine.getNucleotideInfo());
+                        ribose.makeTooltip(currentBase + Integer.toString(counter+1));
+                        adenine.makeTooltip(currentBase + Integer.toString(counter+1));
                         adenine = new Adenine();
                         break;
                     default: break;

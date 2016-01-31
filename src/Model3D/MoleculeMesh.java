@@ -1,5 +1,6 @@
 package Model3D;
 
+import Selection.SelectionColorTransition;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -44,7 +45,11 @@ public class MoleculeMesh extends MeshView {
 
     public void switchOn(){
         this.setMaterial(startMaterial);
-        this.timeline.play();
+        SelectionColorTransition selectionColorTransition = new SelectionColorTransition(startMaterial, Color.CYAN, Color.BROWN, Duration.seconds(0.5));
+        selectionColorTransition.setAutoReverse(true);
+        selectionColorTransition.setCycleCount(Animation.INDEFINITE);
+        selectionColorTransition.play();
+        //this.timeline.play();
 
     }
     public void switchOff(){

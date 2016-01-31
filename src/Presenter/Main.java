@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 
@@ -14,6 +15,8 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
+
+        primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream("icon_rna2.png")));
 
         Parent root = FXMLLoader.load(getClass().getResource("NewView.fxml"));
         primaryStage.setTitle("StructuRNA");

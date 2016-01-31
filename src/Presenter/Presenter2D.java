@@ -65,7 +65,7 @@ public class Presenter2D {
         graphGroup.getChildren().clear();
 
         //Make embedding
-        double[][] embedding = SpringEmbedder.computeSpringEmbedding(30, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
+        double[][] embedding = SpringEmbedder.computeSpringEmbedding(15, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);
         SpringEmbedder.centerCoordinates(embedding, X_MIN_2D, X_MAX_2D, Y_MIN_2D, Y_MAX_2D);
         //Make initial coordinates
         double[][] initialCoordinates = setCoordniatesOnCircle(this.graphModel.getNumberOfNodes());

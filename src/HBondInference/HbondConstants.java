@@ -14,8 +14,12 @@ public class HbondConstants {
     //Minimal Angle for N-H-N hydrogen bonds
     public static final double MINIMAL_ANGLE = 110.0;
 
+    public static final double MINIMAL_ANGLE_AU = 140;
+
+    public static final double MAXIMAL_DISTANCE_AU = 4.0;
+
     //Material for hbonds
-    public final static PhongMaterial hBondMaterial = new PhongMaterial(Color.web("#0011FF30"));
+    public final static PhongMaterial hBondMaterial = new PhongMaterial(Color.web("#6F1EFA30"));
 
 
 }

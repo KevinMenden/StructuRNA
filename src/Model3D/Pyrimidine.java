@@ -58,8 +58,6 @@ public class Pyrimidine {
 
         this.meshView.setMesh(triangleMesh);
         this.meshView.setOriginalMaterial(material);
-        Tooltip tooltip = new Tooltip(this.getNucleotideInfo());
-        tooltip.install(this.meshView, tooltip);
     }
 
     /**
@@ -68,10 +66,6 @@ public class Pyrimidine {
      */
     public void fillCoordinates(Atom atom){
         String name = atom.getIdentity();
-        //If no information about nucleotide saved, add it now
-        if (this.nucleotideInfo == null) {
-            this.nucleotideInfo = atom.getBase() + atom.getResidueNumber();
-        }
 
         switch (name){
             case "N1":
@@ -109,6 +103,12 @@ public class Pyrimidine {
                 break;
 
         }
+    }
+
+    //Install Tooltip for this molecule
+    public void makeTooltip(String tip) {
+        Tooltip tooltip = new Tooltip(tip);
+        tooltip.install(this.meshView, tooltip);
     }
 
 

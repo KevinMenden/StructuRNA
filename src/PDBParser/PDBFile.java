@@ -116,34 +116,42 @@ public class PDBFile {
                 //Append remarks
                 else if (line.startsWith("REMARK")){
                     remarks.append(line);
+                    line = br.readLine();
                 }
                 //Append header
                 else if (line.startsWith("HEADER")){
                     header.append(line);
+                    line = br.readLine();
                 }
                 //Append title
                 else if (line.startsWith("TITLE")){
                     title.append(line);
+                    line = br.readLine();
                 }
                 //Append comund
                 else if (line.startsWith("COMPND")){
                     compound.append(line);
+                    line = br.readLine();
                 }
                 //Append source
                 else if (line.startsWith("SOURCE")){
                     source.append(line);
+                    line = br.readLine();
                 }
                 //Append author
                 else if (line.startsWith("AUTHOR")){
                     author.append(line);
+                    line = br.readLine();
                 }
                 //Append journal
                 else if (line.startsWith("JRNL")){
                     journal.append(line);
+                    line = br.readLine();
                 }
                 //Append revdat
                 else if (line.startsWith("REVDAT")){
                     revdat.append(line);
+                    line = br.readLine();
                 }
                 else line = br.readLine();
             }
@@ -174,7 +182,7 @@ public class PDBFile {
 
         for (Atom atom : atoms){
             if (atom.getResidueNumber() > residueNumber){
-                sequenceBuilder.append(atom.getBase());
+                sequenceBuilder.append(atom.getBase().substring(0,1));
             }
             residueNumber = atom.getResidueNumber();
 

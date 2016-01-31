@@ -54,6 +54,7 @@ public class Controller {
     @FXML
     private MenuItem openFileMenu;
 
+
     @FXML
     private VBox root;
 
@@ -81,21 +82,19 @@ public class Controller {
      */
     @FXML
     void openFile(ActionEvent event) {
+
         FileChooser fileChooser = new FileChooser();
         try {
             File selectedFile = fileChooser.showOpenDialog(root.getScene().getWindow());
             //If file is .pdb file, load it
             if (selectedFile.getAbsolutePath().endsWith(".pdb")) {
                 this.presenter.loadFile(selectedFile.getAbsolutePath());
-                console.setText(console.getText() + "\n> " + selectedFile.getAbsolutePath() + " loaded succesfully!");
-
                 //Set the sequence to te textfield
                 sequenceField.setText(presenter.getPdbFile().getSequence());
                 presenter3D.setSequenceLength(presenter.getSequence().length());
 
                 //SelectionControl instance, handles selection events
                 SelectionControl selectionControl = new SelectionControl(sequenceField, secondaryStructure, structurePane);
-
                 //Center atoms, make 3D structure
                 presenter3D.centerStructure();
                 presenter.setUp3DStructure();
@@ -105,6 +104,7 @@ public class Controller {
 
                 //With all objects produced, initialize SelectionModels
                 selectionControl.initSelectionModel(presenter3D.getNucleotides(), presenter2D.getNodes());
+                console.setText(console.getText() + "\n> " + selectedFile.getAbsolutePath() + " loaded succesfully!");
 
             } else {
                 console.setText(console.getText() + "\n> " + "Selected file is not a .pdb file!");
@@ -161,9 +161,6 @@ public class Controller {
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
-
-
-
         //Make Presenter2D instance
         presenter2D = new Presenter2D();
 
@@ -180,22 +177,6 @@ public class Controller {
 
     }
 
-    /**
-     * Bind the widht and height of subScene to the splitPane
-     * using DoubleBindings and Properties
-     * @param subScene
-     * @param splitPane
-     */
-    private void bindSceneToPane(SubScene subScene, SplitPane splitPane){
-        subScene.widthProperty().bind(new DoubleBinding() {
-            @Override
-            protected double computeValue() {
-                return splitPane.getDividerPositions()[0];
-            }
-        }.multiply(splitPane.widthProperty()));
-
-        subScene.heightProperty().bind(splitPane.heightProperty());
-    }
 
 
 }

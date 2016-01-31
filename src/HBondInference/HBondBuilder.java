@@ -114,19 +114,26 @@ public class HBondBuilder {
     public  boolean isHbond(HBondBuilder builderA, HBondBuilder builderB){
         boolean bool = false;
 
+        try{
+
         //Check if possible Watson Crick base pair
         //If yes, check if H bond
-        if (builderA.getBaseType().equals("A") && builderB.getBaseType().equals("U")){
+        if (builderA.isAdenine() && builderB.isUracil()){
             bool = isAdenineUracilBond(builderA, builderB);
         }
-        else if (builderA.getBaseType().equals("U") && builderB.getBaseType().equals("A")){
+        else if (builderA.isUracil() && builderB.isAdenine()){
             bool = isAdenineUracilBond(builderB, builderA);
         }
-        else if (builderA.getBaseType().equals("C") && builderB.getBaseType().equals("G")){
+        else if (builderA.isCytosine() && builderB.isGuanine()){
             bool = isCytosineGuanineBond(builderA, builderB);
         }
-        else if (builderA.getBaseType().equals("G") && builderB.getBaseType().equals("C")){
-            bool = isCytosineGuanineBond(builderB, builderA);
+        else if (builderA.isGuanine() && builderB.isCytosine()) {
+                bool = isCytosineGuanineBond(builderB, builderA);
+            }
+        }catch (NullPointerException e){
+         System.out.println(builderA.getBaseType());
+            //System.out.println(builderB.getBaseType());
+            System.out.println(builderB.getResdieNumber());
         }
 
 
@@ -139,23 +146,23 @@ public class HBondBuilder {
      */
     private  boolean isAdenineUracilBond(HBondBuilder adenine, HBondBuilder uracil){
         boolean bool = false;
-        double distance1 = adenine.getN1().distance(uracil.getH3());
-        double distance2 = adenine.getH62().distance(uracil.getO4());
-        //double angle1 = adenine.getH62().angle(adenine.getN6(), uracil.getO4());
-        //double angle2 = uracil.getH3().angle(uracil.getN3(), adenine.getN1());
-        double angle = uracil.getH3().angle(uracil.getN3(), adenine.getN1());
+        if (adenine.isAdenineFilled() && uracil.isUracilFilled()) {
+            double distance1 = adenine.getN1().distance(uracil.getH3());
+            double distance2 = adenine.getH62().distance(uracil.getO4());
+            double angle = uracil.getH3().angle(uracil.getN3(), adenine.getN1());
 
-        //Check if distances fit
-        if (distance1<= HbondConstants.MAXIMAL_DISTANCE){
-            if (distance2 <= HbondConstants.MAXIMAL_DISTANCE){
-                if (angle >= HbondConstants.MINIMAL_ANGLE) {
-                    bool = true;
-                    System.out.println("Hbond between " + adenine.getResdieNumber() + " and " + uracil.getResdieNumber() + "\t Angle1: " + angle);
-                    addBondsAndAtomsAU(adenine, uracil);
+
+            //Check if distances fit
+            if (distance1 <= HbondConstants.MAXIMAL_DISTANCE_AU) {
+                if (distance2 <= HbondConstants.MAXIMAL_DISTANCE_AU) {
+                    if (angle >= HbondConstants.MINIMAL_ANGLE_AU) {
+                        bool = true;
+                        System.out.println("Hbond between " + adenine.getResdieNumber() + " and " + uracil.getResdieNumber() + "\t Angle1: " + angle);
+                        addBondsAndAtomsAU(adenine, uracil);
+                    }
                 }
             }
         }
-
         return bool;
     }
 
@@ -164,24 +171,25 @@ public class HBondBuilder {
      */
     private  boolean isCytosineGuanineBond (HBondBuilder cytosine, HBondBuilder guanine){
         boolean bool = false;
-        double distance1 = guanine.getO6().distance(cytosine.getH41());
-        double distance2 = guanine.getH1().distance(cytosine.getN3());
-        double distance3 = guanine.getH21().distance(cytosine.getO2());
-        double angle = guanine.getH1().angle(guanine.getN1(), cytosine.getN3());
+        if (cytosine.isCytosineFilled() && guanine.isGuanineFilled()) {
+            double distance1 = guanine.getO6().distance(cytosine.getH41());
+            double distance2 = guanine.getH1().distance(cytosine.getN3());
+            double distance3 = guanine.getH21().distance(cytosine.getO2());
+            double angle = guanine.getH1().angle(guanine.getN1(), cytosine.getN3());
 
-        //Check all requirements for H bonds
-        if (distance1<= HbondConstants.MAXIMAL_DISTANCE) {
-            if (distance2 <= HbondConstants.MAXIMAL_DISTANCE){
-                if (distance3 <= HbondConstants.MAXIMAL_DISTANCE) {
-                    if (angle >= HbondConstants.MINIMAL_ANGLE) {
-                        bool = true;
-                        System.out.println("Hbond between " + cytosine.getResdieNumber() + " and " + guanine.getResdieNumber() + " Angle: \t" + angle);
-                        addBondsAndAtomsGC(guanine, cytosine);
+            //Check all requirements for H bonds
+            if (distance1 <= HbondConstants.MAXIMAL_DISTANCE) {
+                if (distance2 <= HbondConstants.MAXIMAL_DISTANCE) {
+                    if (distance3 <= HbondConstants.MAXIMAL_DISTANCE) {
+                        if (angle >= HbondConstants.MINIMAL_ANGLE) {
+                            bool = true;
+                            System.out.println("Hbond between " + cytosine.getResdieNumber() + " and " + guanine.getResdieNumber() + " Angle: \t" + angle);
+                            addBondsAndAtomsGC(guanine, cytosine);
+                        }
                     }
                 }
             }
         }
-
         return bool;
     }
     /*
@@ -199,6 +207,8 @@ public class HBondBuilder {
         bondAtoms.add(Atom.makeAtomSphere(nitrogen, cytosine.getN3()));
         bondAtoms.add(Atom.makeAtomSphere(hydrogen, guanine.getH21()));
         bondAtoms.add(Atom.makeAtomSphere(oxygen, cytosine.getO2()));
+        bondAtoms.add(Atom.makeAtomSphere(nitrogen, guanine.getN2()));
+        bondAtoms.add(Atom.makeAtomSphere(nitrogen, cytosine.getN4()));
         //Connect atoms with molecule
         bondAtomConnections.add(makeAtomConnection(cytosine.getC4(), cytosine.getN4()));
         bondAtomConnections.add(makeAtomConnection(cytosine.getN4(), cytosine.getH41()));
@@ -225,6 +235,52 @@ public class HBondBuilder {
         bondAtomConnections.add(makeAtomConnection(uracil.getN3(), uracil.getH3()));
         bondAtomConnections.add(makeAtomConnection(adenine.getN6(), adenine.getH62()));
         bondAtomConnections.add(makeAtomConnection(adenine.getC6(), adenine.getN6()));
+    }
+
+    //Check if all necessary atoms for cytosine are filled
+    private boolean isCytosineFilled(){
+        boolean bool = false;
+        if (this.H41 != null && this.N3 != null && this.O2 != null) bool = true;
+        return bool;
+    }
+    //Check if guanine atoms are filled
+    private boolean isGuanineFilled(){
+        boolean bool = false;
+        if (this.H21 != null && this.O6 != null && this.H1 != null) bool = true;
+        return bool;
+    }
+    //Check if uracil atoms are filled
+    private boolean isUracilFilled(){
+        boolean bool = false;
+        if (this.H3 != null && this.O4 != null && this.N3 != null) bool = true;
+    return bool;
+    }
+    //Check if uracil atoms are filled
+    private boolean isAdenineFilled(){
+        boolean bool = false;
+        if (this.H62 != null && this.N1 != null) bool = true;
+        return bool;
+    }
+
+    private boolean isCytosine(){
+        boolean bool = false;
+        if (this.baseType.equals("C") || this.baseType.equals("CCC") || this.baseType.contains("C")) bool = true;
+        return bool;
+    }
+    private boolean isGuanine(){
+        boolean bool = false;
+        if (this.baseType.equals("G") || this.baseType.equals("GGG") || this.baseType.contains("G")) bool = true;
+        return bool;
+    }
+    private boolean isAdenine(){
+        boolean bool = false;
+        if (this.baseType.equals("A") || this.baseType.equals("AAA") || this.baseType.contains("A")) bool = true;
+        return bool;
+    }
+    private boolean isUracil(){
+        boolean bool = false;
+        if (this.baseType.equals("U") || this.baseType.equals("UUU") || this.baseType.contains("U")) bool = true;
+        return bool;
     }
 
     /**
