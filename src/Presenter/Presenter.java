@@ -38,9 +38,9 @@ public class Presenter {
 
     //The PDBFile that is currently loaded
     private PDBFile pdbFile;
-
+    //The RNA sequence
     private String sequence;
-
+    //The array of atoms
     private Atom[] atoms;
 
     //3D structure pane
@@ -58,6 +58,8 @@ public class Presenter {
         this.pdbFile = new PDBFile(filePath);
         this.sequence = pdbFile.getSequence();
         this.atoms = pdbFile.getAtoms();
+        presenter3D.setAtoms(pdbFile.getAtoms());
+        presenter3D.setSequenceLength(this.sequence.length());
     }
     //Getter for pdbFile
     public PDBFile getPdbFile() {
@@ -72,13 +74,9 @@ public class Presenter {
     /**
      * Set up a 2D Structure and add it to the secondary structure pane
      */
-    public void setUp2DStructure(){
-        //Make the secondary structure
-        //Infer base pairing from PDB file
-        presenter2D.setPdbFile(pdbFile);
-        HydrogonBonds hydrogonBonds = new HydrogonBonds(sequence.length());
-        System.out.println(hydrogonBonds.inferHydrogenBonds(presenter3D.getAtoms()));
-        presenter2D.buildSecondaryStructureGraph(hydrogonBonds.inferHydrogenBonds(atoms));
+    public void setUp2DStructure(String dotBracket){
+        presenter2D.setSequence(sequence);
+        presenter2D.buildSecondaryStructureGraph(dotBracket);
         secondaryStructurePane.getChildren().clear();
         secondaryStructurePane.getChildren().add(presenter2D.getGraphGroup());
 
@@ -89,9 +87,8 @@ public class Presenter {
      * Set up a 3D structure and add it to the structure pane
      */
     public void setUp3DStructure(){
-        presenter3D.setAtoms(this.atoms);
+        presenter3D.setStructurePane(structurePane);
         presenter3D.make3DStructure();
-        //presenter3D.makeBallAndStickModel();
         structurePane.getChildren().clear();
         structurePane.getChildren().add(presenter3D.subScene);
     }
@@ -140,5 +137,13 @@ public class Presenter {
 
     public void setStructurePane(Pane structurePane) {
         this.structurePane = structurePane;
+    }
+
+    public Atom[] getAtoms() {
+        return atoms;
+    }
+
+    public void setAtoms(Atom[] atoms) {
+        this.atoms = atoms;
     }
 }

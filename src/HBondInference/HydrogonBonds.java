@@ -37,6 +37,9 @@ public class HydrogonBonds {
     //ArrayList of atom connections
     private ArrayList<Cylinder> hbondAtomConnections;
 
+    //Array of all nucleotides as HBondBuilder objects
+    private HBondBuilder[] hBondBuilders;
+
     public HydrogonBonds(int sequenceLength){
         this.sequenceLength = sequenceLength;
     }
@@ -54,7 +57,7 @@ public class HydrogonBonds {
             dotBracket.append(".");
         }
         //Array of HBondBuilers
-        HBondBuilder[] hBondBuilders = new HBondBuilder[sequenceLength];
+        hBondBuilders = new HBondBuilder[sequenceLength];
         HBondBuilder generalBuilder = new HBondBuilder();
 
         //For all nucleotides, save the elements necessar for H bond infrence
@@ -75,23 +78,25 @@ public class HydrogonBonds {
             }
             currentReside = atom.getResidueNumber();
             hBondBuilders[index].setAtom(atom);
-            /*
-            if (isHbondBuilderAtom(atom)) {
-                hBondBuilders[index].setAtom(atom);
-            }*/
+
         }
 
         //Iterate through HBondBuilder array and infer Hbonds
         int indexOne = 0;
         int indexTwo = 0;
-
         //First HBondBuilder
         for (HBondBuilder builderA : hBondBuilders){
             indexTwo = 0;
             //Second HBondBuilder
             for (HBondBuilder builderB : hBondBuilders){
-                //Check H bond
+                //Check if H bond
                 if (generalBuilder.isHbond(builderA, builderB)){
+                    //Set indices for hbuilders, set makesHbond to true
+                    builderA.setBondIndices(indexOne, indexTwo);
+                    builderB.setBondIndices(indexTwo, indexOne);
+                    builderA.setMakesHbond(true);
+                    builderB.setMakesHbond(true);
+
                     //Set brackets in dot bracket notation
                     if (indexOne < indexTwo){
                         dotBracket.setCharAt(indexOne, '(');
@@ -105,6 +110,8 @@ public class HydrogonBonds {
             }
             indexOne++;
         }
+        //Detect and delete pseudo knots
+        PseudoKnots.deletePseudoKnots(hBondBuilders, dotBracket);
         this.hbonds = generalBuilder.getHbonds();
         this.bondAtoms = generalBuilder.getBondAtoms();
         this.hbondAtomConnections = generalBuilder.getBondAtomConnections();
@@ -132,7 +139,8 @@ public class HydrogonBonds {
                 default: break;
             }
         }
-        if (dots == 0 && close == 0 && open == 0){
+        //If no bonds are found, report invalid structure
+        if (close == 0){
             return false;
         } else if (open == close) {
             bool = true;
@@ -142,6 +150,7 @@ public class HydrogonBonds {
 
     /**
      * Check if atom is a possible H-bond builder
+     * CURRENTLY UNUSED METHOD
      * @param atom
      * @return boolean bool
      */
@@ -222,6 +231,27 @@ public class HydrogonBonds {
         return bool;
     }
 
+    /*
+    Method returns the indices of all H-bond building nucleotides
+     */
+    public int[] getHBondIndices(){
+        //Count number of hbonds building nucleotides
+        int counter = 0;
+        for (HBondBuilder builder : hBondBuilders){
+            if (builder.isMakesHbond()) counter++;
+        }
+        int[] indices = new int[counter];
+        counter = 0;
+        //Get the indices of all hbond building nucleotides
+        for (HBondBuilder builder : hBondBuilders){
+            if (builder.isMakesHbond()){
+                indices[counter] = builder.getOwnIndex();
+                counter++;
+            }
+        }
+        return indices;
+    }
+
 
     public Atom[] getAtoms() {
         return atoms;
@@ -274,4 +304,8 @@ public class HydrogonBonds {
     public void setHbondAtomConnections(ArrayList<Cylinder> hbondAtomConnections) {
         this.hbondAtomConnections = hbondAtomConnections;
     }
+
+    public HBondBuilder[] gethBondBuilders() {        return hBondBuilders;    }
+
+    public void sethBondBuilders(HBondBuilder[] hBondBuilders) {        this.hBondBuilders = hBondBuilders;    }
 }

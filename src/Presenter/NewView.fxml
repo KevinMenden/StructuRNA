@@ -24,13 +24,25 @@
                   <MenuItem fx:id="colorNucleotide" mnemonicParsing="false" onAction="#colorByNucleotide" text="Color by Nucleotide" />
                   <MenuItem fx:id="colorBasetype" mnemonicParsing="false" onAction="#colorByBasetype" text="Color by Basetype" />
                   <MenuItem fx:id="centerButton" mnemonicParsing="false" onAction="#center" text="Center" />
+                  <MenuItem fx:id="menuItemHbonds" mnemonicParsing="false" onAction="#selectHbonds" text="Select Hydrogen Bonds" />
+                  <MenuItem fx:id="menuClearSelection" mnemonicParsing="false" onAction="#clearSelection" text="Clear Selection" />
                   <SeparatorMenuItem mnemonicParsing="false" />
               <MenuItem mnemonicParsing="false" onAction="#clear" text="Clear" />
             </items>
           </Menu>
+            <Menu fx:id="viewMenu" mnemonicParsing="false" text="View">
+               <items>
+                  <Menu fx:id="backgroundColor" mnemonicParsing="false" text="Background Color">
+                    <items>
+                        <MenuItem fx:id="backgroundWhite" mnemonicParsing="false" onAction="#setWhiteBackground" text="White" />
+                      <MenuItem fx:id="backgroundBlack" mnemonicParsing="false" onAction="#setBlackBackground" text="Black" />
+                    </items>
+                  </Menu>
+               </items>
+            </Menu>
           <Menu fx:id="helpMenu" mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem fx:id="aboutButton" mnemonicParsing="false" text="About" />
+              <MenuItem fx:id="aboutButton" mnemonicParsing="false" onAction="#showHelp" text="About" />
             </items>
           </Menu>
         </menus>

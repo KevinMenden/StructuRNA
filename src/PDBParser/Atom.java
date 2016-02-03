@@ -72,6 +72,7 @@ public class Atom {
         atomSphere.setTranslateY(this.coordinates[1]);
         atomSphere.setTranslateZ(this.coordinates[2]);
         PhongMaterial atomMaterial = new PhongMaterial();
+        atomMaterial.setSpecularColor(Color.DARKCYAN);
         atomSphere.setMaterial(atomMaterial);
         switch (this.element){
             case "H":
@@ -174,7 +175,30 @@ public class Atom {
     }
 
     public String getBase() {
-        return base;
+        String b = "";
+
+        switch (base){
+            case "ADE":
+            case "AAA":
+            case "A":
+                b = "A"; break;
+            case "CYT":
+            case "CCC":
+            case "C":
+                b = "C"; break;
+            case "GUA":
+            case "GGG":
+            case "G":
+                b = "G"; break;
+            case "URA":
+            case "UUU":
+            case "U":
+                b = "U"; break;
+        }
+
+
+
+        return b;
     }
 
     public void setBase(String base) {

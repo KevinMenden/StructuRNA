@@ -11,6 +11,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 
@@ -45,7 +46,7 @@ public class Presenter3D {
     }
 
     //initial camer position (zooming)
-    private final double CAMERA_CENTER_Z = -200;
+    private final double CAMERA_CENTER_Z = -100;
 
     //Translatin and Rotations
     public Rotate cameraRotateX = new Rotate(0, new Point3D(1, 0, 0));
@@ -54,18 +55,16 @@ public class Presenter3D {
 
     //The Group in with all the molecules
     public Group structureGroup = new Group();
+
     //MeshView group for all nucleotides
     private MoleculeMesh[] nucleotides;
     public MoleculeMesh[] getNucleotides() {        return nucleotides;    }
     public void setNucleotides(MoleculeMesh[] nucleotides) {        this.nucleotides = nucleotides;    }
 
-    //The atoms as loaded from the pdb file, centered
+    //The atoms as loaded from the pdb file
     private Atom[] atoms;
     //Setter for atoms
-    public void setAtoms(Atom[] atoms) {
-        this.atoms = atoms;
-        centerAllAtoms(this.atoms);
-    }
+    public void setAtoms(Atom[] atoms) {this.atoms = atoms;}
     public Atom[] getAtoms() {
         return atoms;
     }
@@ -86,11 +85,6 @@ public class Presenter3D {
     public void make3DStructure(){
 
         //Assemble the molecules
-        moleculeAssembler = new MoleculeAssembler(this.atoms, this.sequenceLength);
-        moleculeAssembler.setAdenineMaterial(adenineMaterial);
-        moleculeAssembler.setGuanineMaterial(guanineMaterial);
-        moleculeAssembler.setCytosineMaterial(cytosineMaterial);
-        moleculeAssembler.setUracilMaterial(uracilMaterial);
         moleculeAssembler.assembleMolecules();
         this.structureGroup = moleculeAssembler.getStructureGroup();
         this.nucleotides = moleculeAssembler.getNucleotides();
@@ -115,14 +109,9 @@ public class Presenter3D {
 
     }
 
-    //NOTE WORKING  - MIGHT GET IMPLEMENTED
+    //NOT WORKING  - MIGHT GET IMPLEMENTED
     public void makeBallAndStickModel(){
         //Assemble the molecules
-        moleculeAssembler = new MoleculeAssembler(this.atoms, this.sequenceLength);
-        moleculeAssembler.setAdenineMaterial(adenineMaterial);
-        moleculeAssembler.setGuanineMaterial(guanineMaterial);
-        moleculeAssembler.setCytosineMaterial(cytosineMaterial);
-        moleculeAssembler.setUracilMaterial(uracilMaterial);
         moleculeAssembler.assembleBallAndStickModel();
         this.structureGroup = moleculeAssembler.getStructureGroup();
         //this.nucleotides = moleculeAssembler.getNucleotides();
@@ -147,52 +136,6 @@ public class Presenter3D {
     }
 
 
-    /**
-     * Center Points around the middle
-     *important to for rotation
-     * @param points
-     */
-    public static ArrayList<Point3D> center(ArrayList<Point3D> points) {
-        ArrayList<Point3D> result=new ArrayList<>(points.size());
-        if (points.size() > 0) {
-            double[] center = {0, 0, 0};
-
-            for (Point3D point : points) {
-                center[0] += point.getX();
-                center[1] += point.getY();
-                center[2] += point.getZ();
-            }
-            center[0] /= points.size();
-            center[1] /= points.size();
-            center[2] /= points.size();
-
-            for (Point3D point : points) {
-                result.add(point.subtract(new Point3D(center[0], center[1], center[2])));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Apply center() for all elements of atoms
-     * @param atoms
-     */
-    private void centerAllAtoms(Atom[] atoms){
-        ArrayList<Point3D> points = new ArrayList<>(atoms.length);
-        //Add all points to the ArrayList
-        for (Atom atom : atoms){
-            points.add(atom.getPoint());
-        }
-        //Center the points
-        points = center(points);
-        int i = 0;
-        for (Point3D point3D : points){
-            atoms[i].setPoint(point3D);
-            i++;
-        }
-        //Update the Array of Atoms
-        //this.atoms = atoms;
-    }
 
 
 
@@ -226,6 +169,23 @@ public class Presenter3D {
         cameraRotateY.setAngle(0);
         structureGroup.setTranslateX(0);
         structureGroup.setTranslateY(0);
+    }
+
+    public void setUpMoleculeAssembler(ArrayList<Cylinder> hbonds, ArrayList<Sphere> hBondAtoms, ArrayList<Cylinder> hBondAtomConnections){
+        moleculeAssembler = new MoleculeAssembler(this.atoms, this.sequenceLength);
+        uracilMaterial.setSpecularColor(Color.LIGHTCYAN);
+        adenineMaterial.setSpecularColor(Color.LIGHTCYAN);
+        guanineMaterial.setSpecularColor(Color.LIGHTCYAN);
+        cytosineMaterial.setSpecularColor(Color.LIGHTCYAN);
+
+
+        moleculeAssembler.setAdenineMaterial(adenineMaterial);
+        moleculeAssembler.setGuanineMaterial(guanineMaterial);
+        moleculeAssembler.setCytosineMaterial(cytosineMaterial);
+        moleculeAssembler.setUracilMaterial(uracilMaterial);
+        moleculeAssembler.setHbonds(hbonds);
+        moleculeAssembler.sethBondAtoms(hBondAtoms);
+        moleculeAssembler.sethBondAtomConnections(hBondAtomConnections);
     }
 
 }

@@ -26,7 +26,7 @@ public class MoleculeAssembler {
     private PhongMaterial cytosineMaterial = new PhongMaterial(Color.BLUE);
     private PhongMaterial guanineMaterial = new PhongMaterial(Color.YELLOW);
     //Materials for connections
-    private PhongMaterial phosphateConnectionMaterial = new PhongMaterial(Color.LIGHTGOLDENRODYELLOW);
+    private PhongMaterial phosphateConnectionMaterial = new PhongMaterial(Color.web("c12c0b"));
     private PhongMaterial sugarConnectionMaterial = new PhongMaterial(Color.DARKCYAN);
 
     //The Group in with all the molecules
@@ -43,6 +43,11 @@ public class MoleculeAssembler {
     public MoleculeMesh[] getNucleotides() {        return nucleotides;    }
     public void setNucleotides(MoleculeMesh[] nucleotides) {        this.nucleotides = nucleotides;    }
 
+    ArrayList<Cylinder> hbonds = new ArrayList<>();
+    ArrayList<Sphere> hBondAtoms = new ArrayList<>();
+    ArrayList<Cylinder> hBondAtomConnections = new ArrayList<>();
+
+
     //Array of all atoms
     Atom[] atoms;
     public Atom[] getAtoms() {
@@ -55,11 +60,11 @@ public class MoleculeAssembler {
     public MoleculeAssembler(Atom[] atoms, int sequenceLength){
         this.atoms = atoms;
         this.sequenceLength = sequenceLength;
-        //Center all atom coordinates
-        centerAllAtoms(this.atoms);
     }
 
-
+    /*
+    BALL AND STICK MODEL CURRENTLY NOT WORKING
+     */
     public void assembleBallAndStickModel(){
         int residueNumber = atoms[0].getResidueNumber();
 
@@ -164,6 +169,7 @@ public class MoleculeAssembler {
                 //Add the right base to the view
                 //Make Tooltips, set Materials
                 switch (currentBase){
+                    case "CYT":
                     case "CCC":
                     case "C":
                         cytosine.setMaterial(cytosineMaterial);
@@ -175,6 +181,7 @@ public class MoleculeAssembler {
                         ribose.makeTooltip(currentBase + Integer.toString(counter+1));
                         cytosine = new Cytosine();
                         break;
+                    case "GUA":
                     case "GGG":
                     case "G":
                         guanine.setMaterial(guanineMaterial);
@@ -186,6 +193,7 @@ public class MoleculeAssembler {
                         ribose.makeTooltip(currentBase + Integer.toString(counter+1));
                         guanine = new Guanine();
                         break;
+                    case "URA":
                     case "UUU":
                     case "U":
                         uracil.setMaterial(uracilMaterial);
@@ -197,6 +205,7 @@ public class MoleculeAssembler {
                         uracil.makeTooltip(currentBase + Integer.toString(counter+1));
                         uracil = new Uracil();
                         break;
+                    case "ADE":
                     case "AAA":
                     case "A":
                         adenine.setMaterial(adenineMaterial);
@@ -227,16 +236,16 @@ public class MoleculeAssembler {
                 ribose.fillCoordinates(atom);
             }
         }
-        HydrogonBonds hydrogonBonds = new HydrogonBonds(sequenceLength);
-        hydrogonBonds.inferHydrogenBonds(this.atoms);
-        ArrayList<Cylinder> hbonds = hydrogonBonds.getHbonds();
+        //HydrogonBonds hydrogonBonds = new HydrogonBonds(sequenceLength);
+        //hydrogonBonds.inferHydrogenBonds(this.atoms);
+        //ArrayList<Cylinder> hbonds = hydrogonBonds.getHbonds();
         for (Cylinder cylinder : hbonds){
             structureGroup.getChildren().add(cylinder);
         }
-        for (Sphere sphere : hydrogonBonds.getBondAtoms()){
+        for (Sphere sphere : hBondAtoms){
             structureGroup.getChildren().add(sphere);
         }
-        for (Cylinder c : hydrogonBonds.getHbondAtomConnections()){
+        for (Cylinder c : hBondAtomConnections){
             structureGroup.getChildren().add(c);
         }
     }
@@ -249,6 +258,7 @@ public class MoleculeAssembler {
      * @return
      */
     public Cylinder createConnection(Point3D origin, Point3D target){
+        phosphateConnectionMaterial.setSpecularColor(Color.LIGHTCYAN);
         return Line3D.makeLine3D(origin, target, phosphateConnectionMaterial, 0.3);
     }
 
@@ -273,11 +283,11 @@ Connect all Phosphates with the right sugars
         Point3D cFifePrime = null;
         Point3D phosphate = null;
         Cylinder cylinder = null;
-        int resideNumber = 1;
+        int residueNumber = 1;
         //Go through all atoms
         for (Atom atom : atoms) {
             //If new residue is reached, make connections
-            if (atom.getResidueNumber() > resideNumber && resideNumber > 2){
+            if (atom.getResidueNumber() > residueNumber && residueNumber > 2){
                 cylinder = createSugarConnection(phosphate, cFifePrime);
                 this.structureGroup.getChildren().add(cylinder);
                 cylinder = createSugarConnection(cFifePrime, cFourPrime);
@@ -305,7 +315,7 @@ Connect all Phosphates with the right sugars
                 default: break;
             }
             //Update current residue number
-            resideNumber = atom.getResidueNumber();
+            residueNumber = atom.getResidueNumber();
         }
     }
 
@@ -328,15 +338,23 @@ Connect all Phosphates with the right sugars
             //If new nucleotide is reached, create a connection
             if (residueNumber != atom.getResidueNumber()){
                 switch (residueType){
+                    case "GUA":
+                    case"GGG":
                     case "G":
                         cylinder = createSugarConnection(cOnePrime, guanineAtom);
                         break;
+                    case "ADE":
+                    case "AAA":
                     case "A":
                         cylinder = createSugarConnection(cOnePrime, adenineAtom);
                         break;
+                    case "CCC":
+                    case "CYT":
                     case "C":
                         cylinder = createSugarConnection(cOnePrime, cytosineAtom);
                         break;
+                    case "URA":
+                    case "UUU":
                     case "U":
                         cylinder = createSugarConnection(cOnePrime, uracilAtom);
                         break;
@@ -388,47 +406,7 @@ Connect all Phosphates with the right sugars
         //makeMolecules();
     }
 
-    public static ArrayList<Point3D> center(ArrayList<Point3D> points) {
-        ArrayList<Point3D> result=new ArrayList<>(points.size());
-        if (points.size() > 0) {
-            double[] center = {0, 0, 0};
 
-            for (Point3D point : points) {
-                center[0] += point.getX();
-                center[1] += point.getY();
-                center[2] += point.getZ();
-            }
-            center[0] /= points.size();
-            center[1] /= points.size();
-            center[2] /= points.size();
-
-            for (Point3D point : points) {
-                result.add(point.subtract(new Point3D(center[0], center[1], center[2])));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Apply center() for all elements of atoms
-     * @param atoms
-     */
-    private void centerAllAtoms(Atom[] atoms){
-        ArrayList<Point3D> points = new ArrayList<>(atoms.length);
-        //Add all points to the ArrayList
-        for (Atom atom : atoms){
-            points.add(atom.getPoint());
-        }
-        //Center the points
-        points = center(points);
-        int i = 0;
-        for (Point3D point3D : points){
-            atoms[i].setPoint(point3D);
-            i++;
-        }
-        //Update the Array of Atoms
-        //this.atoms = atoms;
-    }
 
     public PhongMaterial getAdenineMaterial() {
         return adenineMaterial;
@@ -460,5 +438,29 @@ Connect all Phosphates with the right sugars
 
     public void setUracilMaterial(PhongMaterial uracilMaterial) {
         this.uracilMaterial = uracilMaterial;
+    }
+
+    public ArrayList<Cylinder> gethBondAtomConnections() {
+        return hBondAtomConnections;
+    }
+
+    public void sethBondAtomConnections(ArrayList<Cylinder> hBondAtomConnections) {
+        this.hBondAtomConnections = hBondAtomConnections;
+    }
+
+    public ArrayList<Sphere> gethBondAtoms() {
+        return hBondAtoms;
+    }
+
+    public void sethBondAtoms(ArrayList<Sphere> hBondAtoms) {
+        this.hBondAtoms = hBondAtoms;
+    }
+
+    public ArrayList<Cylinder> getHbonds() {
+        return hbonds;
+    }
+
+    public void setHbonds(ArrayList<Cylinder> hbonds) {
+        this.hbonds = hbonds;
     }
 }

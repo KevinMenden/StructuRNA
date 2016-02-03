@@ -17,7 +17,12 @@ public class MousHandler3D {
     private static double mousePosX, mousePosY;
 
 
-    public static void addMouseHandler(Pane structurePane, Group structureGroup, Rotate cameraRotateX, Rotate cameraRotateY, Translate cameraTranslate) {
+    public static void addMouseHandler(Pane structurePane,
+                                       Group structureGroup,
+                                       Rotate cameraRotateX,
+                                       Rotate cameraRotateY,
+                                       Translate cameraTranslate)
+    {
 
     //Save position if mouse is pressed
     structurePane.setOnMousePressed(event-> {
@@ -52,5 +57,10 @@ public class MousHandler3D {
     }
 
     );
+        structurePane.setOnScroll(event -> {
+            cameraTranslate.setZ(cameraTranslate.getZ() - event.getDeltaX());
+            System.out.print(event.getDeltaX());
+            System.out.println(event.getTotalDeltaX());
+        });
 }
 }

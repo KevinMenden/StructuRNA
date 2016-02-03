@@ -1,11 +1,13 @@
 package PDBParser;
 
 import PDBParser.Atom;
+import javafx.geometry.Point3D;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by kevin_000 on 14.12.2015.
@@ -112,6 +114,8 @@ public class PDBFile {
                     this.atoms[index] = atom;
                     index++;
                     line = br.readLine();
+                    System.out.println(atom.getResidueNumber() + "   " + atom.getIdentity() + "  " + atom.getCoordinates()[0] + " " +
+                    atom.getCoordinates()[1] + "  " + atom.getCoordinates()[2]);
                 }
                 //Append remarks
                 else if (line.startsWith("REMARK")){
@@ -170,6 +174,8 @@ public class PDBFile {
         if (source != null) this.source = source.toString();
         if (revdat != null) this.revdat = revdat.toString();
 
+        //Center all the atoms
+        centerAllAtoms(atoms);
     }
 
     /*
@@ -185,9 +191,55 @@ public class PDBFile {
                 sequenceBuilder.append(atom.getBase().substring(0,1));
             }
             residueNumber = atom.getResidueNumber();
-
         }
         this.sequence = sequenceBuilder.toString();
+    }
+
+    /**
+     * Center Points around the middle
+     *important to for rotation
+     * @param points
+     */
+    public static ArrayList<Point3D> center(ArrayList<Point3D> points) {
+        ArrayList<Point3D> result=new ArrayList<>(points.size());
+        if (points.size() > 0) {
+            double[] center = {0, 0, 0};
+
+            for (Point3D point : points) {
+                center[0] += point.getX();
+                center[1] += point.getY();
+                center[2] += point.getZ();
+            }
+            center[0] /= points.size();
+            center[1] /= points.size();
+            center[2] /= points.size();
+
+            for (Point3D point : points) {
+                result.add(point.subtract(new Point3D(center[0], center[1], center[2])));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Apply center() for all elements of atoms
+     * @param atoms
+     */
+    private void centerAllAtoms(Atom[] atoms){
+        ArrayList<Point3D> points = new ArrayList<>(atoms.length);
+        //Add all points to the ArrayList
+        for (Atom atom : atoms){
+            points.add(atom.getPoint());
+        }
+        //Center the points
+        points = center(points);
+        int i = 0;
+        for (Point3D point3D : points){
+            atoms[i].setPoint(point3D);
+            i++;
+        }
+        //Update the Array of Atoms
+        //this.atoms = atoms;
     }
 
 

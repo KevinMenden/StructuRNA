@@ -34,6 +34,9 @@ public class SelectionControl {
     private Pane secondaryPane;
     private TextField sequenceField;
 
+    private SelectionModel<MoleculeMesh> model3D;
+    private SelectionModel<Node> model2D;
+
     //Position of anchor and caret in the textfield
     private int caretPosition = 0;
     private int anchorPosition = 0;
@@ -64,18 +67,18 @@ public class SelectionControl {
      * @param nodes
      */
     public void initSelectionModel(MoleculeMesh[] nucleotides, Node[] nodes){
-        SelectionModel<MoleculeMesh> model1 = new SelectionModel<>(nucleotides);
-        SelectionModel<Node> model2 = new SelectionModel<>(nodes);
+        model3D = new SelectionModel<>(nucleotides);
+        model2D = new SelectionModel<>(nodes);
         this.nucleotides = nucleotides;
         this.nodes = nodes;
 
         for (int i = 0; i < nucleotides.length; i++){
             final int index = i;
             nucleotides[i].setOnMouseClicked(event -> {
-                handleClickedEvent(event, model1, model2, index);
+                handleClickedEvent(event, model3D, model2D, index);
             });
             nodes[i].setOnMouseClicked(event -> {
-                handleClickedEvent(event, model1, model2, index);
+                handleClickedEvent(event, model3D, model2D, index);
             });
         }
     }
@@ -106,6 +109,38 @@ public class SelectionControl {
             this.anchorPosition = index;
             this.caretPosition = index+1;
             this.sequenceField.selectRange(anchorPosition, caretPosition);
+        }
+    }
+
+    /*
+    Select all nucleotides and nodes that are part of hbonds
+     */
+    public void selectHbondsNucleotides(int[] indices){
+
+        for (int i : indices){
+            model2D.clearSelection();
+            model3D.clearSelection();
+
+            model3D.select(i);
+            model2D.select(i);
+            nucleotides[i].switchOn();
+            nodes[i].switchOn();
+        }
+
+
+    }
+
+    /*
+    Clear all selections
+     */
+    public void clearSelection(){
+        model3D.clearSelection();
+        model2D.clearSelection();
+        for (MoleculeMesh mm : nucleotides){
+            mm.switchOff();
+        }
+        for (Node n : nodes){
+            n.switchOff();
         }
     }
 

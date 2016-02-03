@@ -20,11 +20,13 @@ import javafx.util.Duration;
  */
 public class Presenter2D {
 
-    //pdbFile
-    private PDBFile pdbFile;
     //Graph Model and Group for 2D representation
     private Graph graphModel = new Graph();
     private Group graphGroup = new Group();
+
+    //RNA sequence
+    private String sequence;
+    public void setSequence(String sequence) { this.sequence = sequence;    }
 
     //Nodes
     Node[] nodes;
@@ -43,10 +45,7 @@ public class Presenter2D {
 
 
     public Presenter2D(){}
-    //Set te pdb file
-    public void setPdbFile(PDBFile pdbFile) {
-        this.pdbFile = pdbFile;
-    }
+
     //Get the graph Structure
     public Group getGraphGroup() {
         graphGroup.setOpacity(1.0);
@@ -86,7 +85,7 @@ public class Presenter2D {
         int index = 0;
         nodes = new Node[numberOfNodes];
         for (double[] point : embedding) {
-            this.graphModel.setSequence(pdbFile.getSequence());
+            this.graphModel.setSequence(this.sequence);
             Nucleotide nucleotide = new Nucleotide(this.graphModel.getSequence().charAt(index));
             Node node = new Node(point[0],point[1],5, nucleotide);
             node.setNucleotideNumber(index);
@@ -123,9 +122,31 @@ public class Presenter2D {
             this.graphGroup.getChildren().add(n);
         }
 
-        //Allow dragging - IMPACTS SCENE STRUCTURE ??
-        //setDragNode(nodes);
+        //Enable dragging
+        addMouseHandling();
 
+    }
+
+
+    /*
+    Enable draggin of the secondary structure over the scene
+     */
+    private void addMouseHandling(){
+        this.graphGroup.setOnMousePressed(event -> {
+            originalMouseX = event.getSceneX();
+            originalMouseY = event.getSceneY();
+        });
+
+        this.graphGroup.setOnMouseDragged(event -> {
+
+            double dX = event.getSceneX() - originalMouseX;
+            double dY = event.getSceneY() - originalMouseY;
+
+            this.graphGroup.setTranslateX(graphGroup.getTranslateX() + dX);
+            this.graphGroup.setTranslateY(graphGroup.getTranslateY() + dY);
+            originalMouseX = event.getSceneX();
+            originalMouseY = event.getSceneY();
+        });
     }
 
     /**
@@ -168,26 +189,6 @@ public class Presenter2D {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * draw a graph in animated style
      * @param initialCoordinates
@@ -200,7 +201,7 @@ public class Presenter2D {
         //draw initial points with tooltips
         Node[] nodes = new Node[numberOfNodes];
         Node[] endNodes = new Node[numberOfNodes];
-        this.graphModel.setSequence(pdbFile.getSequence());
+        this.graphModel.setSequence(sequence);
         int index = 0;
         //Make nodes with initialCoordinates
         for (double[] point : initialCoordinates) {

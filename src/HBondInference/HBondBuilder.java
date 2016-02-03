@@ -29,7 +29,7 @@ public class HBondBuilder {
     private Point3D O4;
     private Point3D O6;
     private Point3D H21;
-    private Point3D H62;
+    private Point3D H61;
     private Point3D H4;
     private Point3D H3;
     private Point3D H1;
@@ -43,6 +43,13 @@ public class HBondBuilder {
     private String nitrogen = "N";
     private String oxygen = "O";
     private String hydrogen = "H";
+
+    //index of this nucleotide and the partner (if part of hbond)
+    private int ownIndex;
+    private int partnerIndex;
+
+    //boolean is true if this nucleotide is part of an hbond
+    private boolean makesHbond = false;
 
     //ArrayList of hbonds
     private ArrayList<Cylinder> hbonds = new ArrayList<>();
@@ -85,8 +92,8 @@ public class HBondBuilder {
                 O6 = atom.getPoint(); break;
             case "H21":
                 H21 = atom.getPoint(); break;
-            case "H62":
-                H62 = atom.getPoint(); break;
+            case "H61":
+                H61 = atom.getPoint(); break;
             case "H4":
                 H4 = atom.getPoint(); break;
             case "H3":
@@ -148,7 +155,7 @@ public class HBondBuilder {
         boolean bool = false;
         if (adenine.isAdenineFilled() && uracil.isUracilFilled()) {
             double distance1 = adenine.getN1().distance(uracil.getH3());
-            double distance2 = adenine.getH62().distance(uracil.getO4());
+            double distance2 = adenine.getH61().distance(uracil.getO4());
             double angle = uracil.getH3().angle(uracil.getN3(), adenine.getN1());
 
 
@@ -225,15 +232,15 @@ public class HBondBuilder {
     private void addBondsAndAtomsAU(HBondBuilder adenine, HBondBuilder uracil){
         //Make hydrogen bond cylinder
         hbonds.add(makeHydrogenBond(adenine.getN1(), uracil.getH3()));
-        hbonds.add(makeHydrogenBond(adenine.getH62(), uracil.getO4()));
+        hbonds.add(makeHydrogenBond(adenine.getH61(), uracil.getO4()));
         //make hydrogen bond building atoms
         bondAtoms.add(Atom.makeAtomSphere(nitrogen, adenine.getN1()));
         bondAtoms.add(Atom.makeAtomSphere(hydrogen, uracil.getH3()));
-        bondAtoms.add(Atom.makeAtomSphere(hydrogen, adenine.getH62()));
+        bondAtoms.add(Atom.makeAtomSphere(hydrogen, adenine.getH61()));
         bondAtoms.add(Atom.makeAtomSphere(oxygen, uracil.getO4()));
         bondAtomConnections.add(makeAtomConnection(uracil.getC4(), uracil.getO4()));
         bondAtomConnections.add(makeAtomConnection(uracil.getN3(), uracil.getH3()));
-        bondAtomConnections.add(makeAtomConnection(adenine.getN6(), adenine.getH62()));
+        bondAtomConnections.add(makeAtomConnection(adenine.getN6(), adenine.getH61()));
         bondAtomConnections.add(makeAtomConnection(adenine.getC6(), adenine.getN6()));
     }
 
@@ -258,28 +265,28 @@ public class HBondBuilder {
     //Check if uracil atoms are filled
     private boolean isAdenineFilled(){
         boolean bool = false;
-        if (this.H62 != null && this.N1 != null) bool = true;
+        if (this.H61 != null && this.N1 != null) bool = true;
         return bool;
     }
 
     private boolean isCytosine(){
         boolean bool = false;
-        if (this.baseType.equals("C") || this.baseType.equals("CCC") || this.baseType.contains("C")) bool = true;
+        if (this.baseType.equals("C") || this.baseType.equals("CCC") || this.baseType.equals("CYT")) bool = true;
         return bool;
     }
     private boolean isGuanine(){
         boolean bool = false;
-        if (this.baseType.equals("G") || this.baseType.equals("GGG") || this.baseType.contains("G")) bool = true;
+        if (this.baseType.equals("G") || this.baseType.equals("GGG") || this.baseType.equals("GUA")) bool = true;
         return bool;
     }
     private boolean isAdenine(){
         boolean bool = false;
-        if (this.baseType.equals("A") || this.baseType.equals("AAA") || this.baseType.contains("A")) bool = true;
+        if (this.baseType.equals("A") || this.baseType.equals("AAA") || this.baseType.equals("ADE")) bool = true;
         return bool;
     }
     private boolean isUracil(){
         boolean bool = false;
-        if (this.baseType.equals("U") || this.baseType.equals("UUU") || this.baseType.contains("U")) bool = true;
+        if (this.baseType.equals("U") || this.baseType.equals("UUU") || this.baseType.equals("URA")) bool = true;
         return bool;
     }
 
@@ -292,6 +299,15 @@ public class HBondBuilder {
     //Connect two atoms
     private Cylinder makeAtomConnection(Point3D origin, Point3D target){
         return Line3D.makeLine3D(origin, target, new PhongMaterial(Color.DARKCYAN), 0.05);
+    }
+
+    /*
+    Called if part of H-bond
+    Sets this index and the index of the partner nucleotide
+     */
+    public void setBondIndices(int ownIndex, int partnerIndex){
+        this.ownIndex = ownIndex;
+        this.partnerIndex = partnerIndex;
     }
 
     /*
@@ -361,12 +377,12 @@ public class HBondBuilder {
         N1 = n1;
     }
 
-    public Point3D getH62() {
-        return H62;
+    public Point3D getH61() {
+        return H61;
     }
 
-    public void setH62(Point3D h62) {
-        H62 = h62;
+    public void setH61(Point3D h61) {
+        H61 = h61;
     }
 
     public Point3D getH4() {
@@ -444,5 +460,35 @@ public class HBondBuilder {
         this.bondAtomConnections = bondAtomConnections;
     }
 
+    public void setBondAtoms(ArrayList<Sphere> bondAtoms) {
+        this.bondAtoms = bondAtoms;
+    }
 
+    public int getPartnerIndex() {
+        return partnerIndex;
+    }
+
+    public void setPartnerIndex(int partnerIndex) {
+        this.partnerIndex = partnerIndex;
+    }
+
+    public int getOwnIndex() {
+        return ownIndex;
+    }
+
+    public void setOwnIndex(int ownIndex) {
+        this.ownIndex = ownIndex;
+    }
+
+    public void setHbonds(ArrayList<Cylinder> hbonds) {
+        this.hbonds = hbonds;
+    }
+
+    public boolean isMakesHbond() {
+        return makesHbond;
+    }
+
+    public void setMakesHbond(boolean makesHbond) {
+        this.makesHbond = makesHbond;
+    }
 }

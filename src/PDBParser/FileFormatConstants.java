@@ -17,7 +17,7 @@ public class FileFormatConstants {
     public static final int BASE_START = 17;
     public static final int BASE_END = 20;
 
-    public static final int RESIDUE_NUMBER_START = 23;
+    public static final int RESIDUE_NUMBER_START = 22;
     public static final int RESIDUE_NUMBER_END = 26;
 
     public static final int ELEMENT_START = 77;

@@ -7,6 +7,9 @@ import javafx.util.Duration;
 
 /**
  * Created by kevin_000 on 31.01.2016.
+ *
+ * Transition for the color of a material, used for indicating selection
+ *
  */
 public class SelectionColorTransition extends Transition {
 
@@ -26,7 +29,10 @@ public class SelectionColorTransition extends Transition {
         setCycleDuration(duration);
     }
 
-
+    /*
+    Override interpolate method
+    Change the RGB values from start to end dependent on t
+     */
     @Override
     protected void interpolate(double t) {
         double green = start.getGreen() + t * (end.getGreen() - start.getGreen());

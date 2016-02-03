@@ -6,7 +6,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 
 /**
@@ -15,12 +17,14 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
+        //Load application icon
+        primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream("img/trna_pdb.gif")));
 
-        primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream("icon_rna2.png")));
-
+        //load FXML, init stage
         Parent root = FXMLLoader.load(getClass().getResource("NewView.fxml"));
         primaryStage.setTitle("StructuRNA");
-        primaryStage.setScene(new Scene(root, 1000, 700,true, SceneAntialiasing.BALANCED));
+        Scene scene = new Scene(root, 1000, 700, true, SceneAntialiasing.BALANCED);
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 
