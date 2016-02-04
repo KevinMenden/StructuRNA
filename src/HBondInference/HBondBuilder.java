@@ -139,7 +139,6 @@ public class HBondBuilder {
             }
         }catch (NullPointerException e){
          System.out.println(builderA.getBaseType());
-            //System.out.println(builderB.getBaseType());
             System.out.println(builderB.getResdieNumber());
         }
 
@@ -159,12 +158,12 @@ public class HBondBuilder {
             double angle = uracil.getH3().angle(uracil.getN3(), adenine.getN1());
 
 
-            //Check if distances fit
+            //Check if distances and angle fit
             if (distance1 <= HbondConstants.MAXIMAL_DISTANCE_AU) {
                 if (distance2 <= HbondConstants.MAXIMAL_DISTANCE_AU) {
                     if (angle >= HbondConstants.MINIMAL_ANGLE_AU) {
                         bool = true;
-                        System.out.println("Hbond between " + adenine.getResdieNumber() + " and " + uracil.getResdieNumber() + "\t Angle1: " + angle);
+                        //System.out.println("Hbond between " + adenine.getResdieNumber() + " and " + uracil.getResdieNumber() + "\t Angle1: " + angle);
                         addBondsAndAtomsAU(adenine, uracil);
                     }
                 }
@@ -190,7 +189,7 @@ public class HBondBuilder {
                     if (distance3 <= HbondConstants.MAXIMAL_DISTANCE) {
                         if (angle >= HbondConstants.MINIMAL_ANGLE) {
                             bool = true;
-                            System.out.println("Hbond between " + cytosine.getResdieNumber() + " and " + guanine.getResdieNumber() + " Angle: \t" + angle);
+                            //System.out.println("Hbond between " + cytosine.getResdieNumber() + " and " + guanine.getResdieNumber() + " Angle: \t" + angle);
                             addBondsAndAtomsGC(guanine, cytosine);
                         }
                     }
@@ -269,6 +268,9 @@ public class HBondBuilder {
         return bool;
     }
 
+    /*
+    Booleans for nucleotide type
+     */
     private boolean isCytosine(){
         boolean bool = false;
         if (this.baseType.equals("C") || this.baseType.equals("CCC") || this.baseType.equals("CYT")) bool = true;

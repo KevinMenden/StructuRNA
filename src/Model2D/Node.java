@@ -45,6 +45,10 @@ public class Node extends Circle {
         this.fillTransition.stop();
         this.setFill(getColor(nucleotide.getNucleotide()));
     }
+    //Swith on without animation
+    public void switchOnStatic(){
+        this.setFill(Color.CYAN);
+    }
 
 
 

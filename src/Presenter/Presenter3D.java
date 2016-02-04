@@ -1,5 +1,6 @@
 package Presenter;
 
+import HBondInference.HydrogonBonds;
 import Model3D.*;
 import PDBParser.Atom;
 import javafx.geometry.Point3D;
@@ -46,7 +47,7 @@ public class Presenter3D {
     }
 
     //initial camer position (zooming)
-    private final double CAMERA_CENTER_Z = -100;
+    private final double CAMERA_CENTER_Z = -200;
 
     //Translatin and Rotations
     public Rotate cameraRotateX = new Rotate(0, new Point3D(1, 0, 0));
@@ -78,6 +79,7 @@ public class Presenter3D {
     public Presenter3D() {};
 
     /*
+    NOT IN USE ANYMORE
     Build the 3D structure with the MoleculeAssembler
     Set upt he structure group and the SubScene
     Add structure handling to the scene
@@ -85,9 +87,11 @@ public class Presenter3D {
     public void make3DStructure(){
 
         //Assemble the molecules
+        //moleculeAssembler.assembleMoleculesTest();
         moleculeAssembler.assembleMolecules();
         this.structureGroup = moleculeAssembler.getStructureGroup();
         this.nucleotides = moleculeAssembler.getNucleotides();
+        //addStructures();
 
         //Initialize SubScene and camera
 
@@ -108,34 +112,6 @@ public class Presenter3D {
         MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
 
     }
-
-    //NOT WORKING  - MIGHT GET IMPLEMENTED
-    public void makeBallAndStickModel(){
-        //Assemble the molecules
-        moleculeAssembler.assembleBallAndStickModel();
-        this.structureGroup = moleculeAssembler.getStructureGroup();
-        //this.nucleotides = moleculeAssembler.getNucleotides();
-
-        //Initialize SubScene and camera
-
-        subScene = new SubScene(structureGroup, 426, 553, true, SceneAntialiasing.BALANCED);
-        subScene.setFill(Color.WHITE);
-        camera = new PerspectiveCamera(true);
-        camera.setFarClip(10000.0);
-        camera.setNearClip(0.1);
-        //Add Transforms to stucture and camera
-        structureGroup.getTransforms().addAll(cameraRotateX, cameraRotateY);
-        camera.getTransforms().addAll(cameraTranslate);
-        subScene.setCamera(camera);
-        //Bind subscene to its pane
-        subScene.widthProperty().bind(structurePane.widthProperty());
-        subScene.heightProperty().bind(structurePane.heightProperty());
-
-        //Set up handling of the structure
-        MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
-    }
-
-
 
 
 
@@ -171,6 +147,7 @@ public class Presenter3D {
         structureGroup.setTranslateY(0);
     }
 
+    //NOT IN USE ANYMORE
     public void setUpMoleculeAssembler(ArrayList<Cylinder> hbonds, ArrayList<Sphere> hBondAtoms, ArrayList<Cylinder> hBondAtomConnections){
         moleculeAssembler = new MoleculeAssembler(this.atoms, this.sequenceLength);
         uracilMaterial.setSpecularColor(Color.LIGHTCYAN);
@@ -186,6 +163,48 @@ public class Presenter3D {
         moleculeAssembler.setHbonds(hbonds);
         moleculeAssembler.sethBondAtoms(hBondAtoms);
         moleculeAssembler.sethBondAtomConnections(hBondAtomConnections);
+    }
+
+    /**
+     * Make new Group, add all Shapes to it
+     * Make new SubScene, add the Group, Camera and MouseHandler
+     *
+     * @param moleculeAssembler
+     * @param hydrogenBonds
+     */
+    public void addStructures(MoleculeAssembler moleculeAssembler, HydrogonBonds hydrogenBonds){
+
+        //Reset the structure group
+        structureGroup = new Group();
+
+        //Add all parts of the structure to the group
+        structureGroup.getChildren().addAll(moleculeAssembler.getPhosphateConnections());
+        structureGroup.getChildren().addAll(moleculeAssembler.getSugarConnections());
+        structureGroup.getChildren().addAll(moleculeAssembler.getStructureAtoms());
+        structureGroup.getChildren().addAll(moleculeAssembler.getPhosphateAtoms());
+        structureGroup.getChildren().addAll(moleculeAssembler.getNucleotides());
+        structureGroup.getChildren().addAll(moleculeAssembler.getRiboses());
+        structureGroup.getChildren().addAll(hydrogenBonds.getBondAtoms());
+        structureGroup.getChildren().addAll(hydrogenBonds.getHbondAtomConnections());
+        structureGroup.getChildren().addAll(hydrogenBonds.getHbonds());
+
+        //Initialize SubScene and camera
+
+        subScene = new SubScene(structureGroup, 426, 553, true, SceneAntialiasing.BALANCED);
+        subScene.setFill(Color.BLACK);
+        camera = new PerspectiveCamera(true);
+        camera.setFarClip(10000.0);
+        camera.setNearClip(0.1);
+        //Add Transforms to stucture and camera
+        structureGroup.getTransforms().addAll(cameraRotateX, cameraRotateY);
+        camera.getTransforms().addAll(cameraTranslate);
+        subScene.setCamera(camera);
+        //Bind subscene to its pane
+        subScene.widthProperty().bind(structurePane.widthProperty());
+        subScene.heightProperty().bind(structurePane.heightProperty());
+
+        //Set up handling of the structure
+        MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
     }
 
 }

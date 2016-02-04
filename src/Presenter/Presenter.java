@@ -3,6 +3,7 @@ package Presenter;
 import HBondInference.HydrogonBonds;
 import Model.Nucleotide;
 import Model2D.*;
+import Model3D.MoleculeAssembler;
 import PDBParser.Atom;
 import PDBParser.PDBFile;
 import javafx.animation.Animation;
@@ -90,6 +91,19 @@ public class Presenter {
         presenter3D.setStructurePane(structurePane);
         presenter3D.make3DStructure();
         structurePane.getChildren().clear();
+        structurePane.getChildren().add(presenter3D.subScene);
+    }
+
+    /**
+     * Takes all structural elements and puts them onto the screen
+     * handling of the structure is done by Presenter3D
+     * @param moleculeAssembler
+     * @param hydrogonBonds
+     */
+    public void putStructureOnScene(MoleculeAssembler moleculeAssembler, HydrogonBonds hydrogonBonds){
+        presenter3D.setStructurePane(structurePane);
+        structurePane.getChildren().clear();
+        presenter3D.addStructures(moleculeAssembler, hydrogonBonds);
         structurePane.getChildren().add(presenter3D.subScene);
     }
 

@@ -1,18 +1,21 @@
 package Presenter;
 
+import Concurrent.HydrogenBondService;
+import Concurrent.MoleculeAssemblerService;
 import HBondInference.HydrogonBonds;
 import Model2D.Nussinov;
+import Model3D.MoleculeAssembler;
 import Selection.SelectionControl;
-import javafx.beans.binding.DoubleBinding;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 
-import javafx.scene.SubScene;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -29,6 +32,9 @@ public class Controller {
     private HydrogonBonds hydrogonBonds;
     private SelectionControl selectionControl;
     private boolean fileLoaded = false;
+
+    private HydrogenBondService hydrogenBondService;
+    private Text[] nucleotideLetters;
 
     @FXML
     private MenuItem colorNucleotide;
@@ -72,6 +78,13 @@ public class Controller {
     private MenuItem menuItemHbonds;
     @FXML
     private MenuItem menuClearSelection;
+    @FXML
+    private ProgressIndicator progressIndicator;
+    @FXML
+    private TextFlow sequenceTextField;
+    @FXML
+    private CheckMenuItem animatedSelectionBox;
+
 
     /**
      * Open a PDB file, make the 3D structure and the 2D structure
@@ -88,37 +101,48 @@ public class Controller {
                 this.presenter.loadFile(selectedFile.getAbsolutePath());
                 showInfo("Loading file " + selectedFile.getName());
 
+                System.out.println("Processors: " + Runtime.getRuntime().availableProcessors());
+
                 //Set the sequence to the textfield
-                sequenceField.setText(presenter.getSequence());
+                this.nucleotideLetters = makeNucleotideTextObjects(presenter.getSequence());
+                sequenceTextField.getChildren().clear();
+                sequenceTextField.getChildren().addAll(nucleotideLetters);
+                selectionControl.setNucleotideLetters(nucleotideLetters);
+                //sequenceField.setText(presenter.getSequence());
 
-                //hydrogen bond inference, use centered atoms
+                //Use differen Threads to calculate hydrogen bonds and set up all structure elements
+                hydrogenBondService.reset();
                 hydrogonBonds = new HydrogonBonds(presenter.getSequence().length());
-                hydrogonBonds.inferHydrogenBonds(presenter.getAtoms());
+                hydrogenBondService.updateService(presenter.getAtoms(), hydrogonBonds);
+                hydrogenBondService.start();
+                progressIndicator.setVisible(true);
+                progressIndicator.progressProperty().bind(hydrogenBondService.progressProperty());
+                MoleculeAssemblerService moleculeAssemblerService = new MoleculeAssemblerService(presenter.getAtoms(), presenter.getSequence().length());
+                moleculeAssemblerService.start();
 
-                //SelectionControl instance, handles selection events
-                selectionControl = new SelectionControl(sequenceField, secondaryStructure, structurePane);
+                //If molecules are assembled, put all parts together and put them on the scene
+                moleculeAssemblerService.setOnSucceeded(event2 -> {
+                    presenter.putStructureOnScene(moleculeAssemblerService.getMoleculeAssembler(), hydrogonBonds);
+                    presenter.getPresenter3D().centerStructure();
 
-                //make 3D structure
-                presenter.getPresenter3D().setUpMoleculeAssembler(hydrogonBonds.getHbonds(), hydrogonBonds.getBondAtoms(), hydrogonBonds.getHbondAtomConnections());
-                presenter.getPresenter3D().centerStructure();
-                presenter.setUp3DStructure();
+                    if (hydrogonBonds.isValidDotBracketNotation(hydrogonBonds.getDotBracket())) {
+                        presenter.setUp2DStructure(hydrogonBonds.getDotBracket());
+                        showInfo("Computed secondary structure: " + hydrogonBonds.getDotBracket());
+                    } else {
+                        Nussinov nussinov = new Nussinov(presenter.getSequence());
+                        nussinov.apply();
+                        presenter.setUp2DStructure(nussinov.getBracketNotation());
+                        showInfo("Could not infer hydrogen bonds. Nussinov algorithm used instead: " + nussinov.getBracketNotation());
+                    }
 
-                //Draw the secondary structure
-                //Check computed dot bracket - if invalid, use nussinov
-                if (hydrogonBonds.isValidDotBracketNotation(hydrogonBonds.getDotBracket())) {
-                    presenter.setUp2DStructure(hydrogonBonds.getDotBracket());
-                    showInfo("Computed secondary structure: " + hydrogonBonds.getDotBracket());
-                } else {
-                    Nussinov nussinov = new Nussinov(presenter.getSequence());
-                    nussinov.apply();
-                    presenter.setUp2DStructure(nussinov.getBracketNotation());
-                    showInfo("Could not infer hydrogen bonds. Nussinov algorithm used instead: " + nussinov.getBracketNotation());
-                }
+                    //With all objects produced, initialize SelectionModels
+                    selectionControl.initSelectionModel(moleculeAssemblerService.getMoleculeAssembler().getNucleotides(), presenter2D.getNodes());
+                    showInfo(selectedFile.getName() + " loaded succesfully!");
 
-                //With all objects produced, initialize SelectionModels
-                selectionControl.initSelectionModel(presenter3D.getNucleotides(), presenter2D.getNodes());
-                showInfo(selectedFile.getName() + " loaded succesfully!");
-                this.fileLoaded = true;
+                    this.fileLoaded = true;
+                    progressIndicator.setVisible(false);
+                });
+
             } else {
                 showInfo("Selected file is not a .pdb file!");
             }
@@ -129,7 +153,7 @@ public class Controller {
         }
         catch (Exception e){
             e.printStackTrace();
-            showInfo(e.getCause() + " caught during file loading.");
+            showInfo(e.getCause() + " caught during file loading." + e.getMessage());
         }
     }
 
@@ -233,9 +257,7 @@ public class Controller {
     void initialize() {
         //Make Presenter2D instance
         presenter2D = new Presenter2D();
-
-        //Make Presenter3D instance, set up action events for handling
-        //the 3D structure
+        //Make Presenter3D instance
         presenter3D = new Presenter3D();
         //presenter3D.setStructurePane(structurePane);
         //Make Presenter instance
@@ -245,12 +267,25 @@ public class Controller {
         presenter.setStructurePane(structurePane);
         presenter.setPresenter3D(presenter3D);
 
+        selectionControl = new SelectionControl(sequenceField, secondaryStructure, structurePane, animatedSelectionBox);
+
+        hydrogenBondService = new HydrogenBondService();
+
     }
 
     //Updates text in the console
     private void showInfo(String info){
         this.console.setText(console.getText() + "\n> " + info);
         this.console.setScrollTop(Double.MAX_VALUE);
+    }
+
+    //Make a text object for every nucleotide for TextFlow usage
+    private Text[] makeNucleotideTextObjects(String sequence){
+        Text[] texts = new Text[sequence.length()];
+        for (int i = 0; i < sequence.length(); i++){
+            texts[i] = new Text(String.valueOf(sequence.charAt(i)));
+        }
+        return texts;
     }
 
 

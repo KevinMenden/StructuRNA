@@ -148,7 +148,7 @@ public class Ribose {
         this.texCoords = texCoords;
     }
 
-    public MeshView getMeshView() {
+    public MoleculeMesh getMeshView() {
         return meshView;
     }
 }

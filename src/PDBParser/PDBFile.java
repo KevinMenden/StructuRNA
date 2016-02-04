@@ -114,8 +114,8 @@ public class PDBFile {
                     this.atoms[index] = atom;
                     index++;
                     line = br.readLine();
-                    System.out.println(atom.getResidueNumber() + "   " + atom.getIdentity() + "  " + atom.getCoordinates()[0] + " " +
-                    atom.getCoordinates()[1] + "  " + atom.getCoordinates()[2]);
+                    //System.out.println(atom.getResidueNumber() + "   " + atom.getIdentity() + "  " + atom.getCoordinates()[0] + " " +
+                    //atom.getCoordinates()[1] + "  " + atom.getCoordinates()[2]);
                 }
                 //Append remarks
                 else if (line.startsWith("REMARK")){

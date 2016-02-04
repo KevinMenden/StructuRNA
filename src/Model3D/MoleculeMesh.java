@@ -52,6 +52,10 @@ public class MoleculeMesh extends MeshView {
         //this.timeline.play();
 
     }
+    //Switch on without animation
+    public void switchOnStatic(){
+        this.setMaterial(startMaterial);
+    }
     public void switchOff(){
         this.setMaterial(originalMaterial);
         this.timeline.stop();

@@ -5,6 +5,7 @@ import Model3D.MoleculeMesh;
 import javafx.animation.Animation;
 import javafx.animation.FillTransition;
 import javafx.event.Event;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -14,10 +15,12 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import javafx.util.Duration;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -33,6 +36,8 @@ public class SelectionControl {
     private Pane structurePane;
     private Pane secondaryPane;
     private TextField sequenceField;
+    private Text[] nucleotideLetters;
+    private CheckMenuItem animatedSelection;
 
     private SelectionModel<MoleculeMesh> model3D;
     private SelectionModel<Node> model2D;
@@ -46,19 +51,11 @@ public class SelectionControl {
 
     //Make instance of object with panes and textfield
     //init bindings for textfield
-    public SelectionControl(TextField textField, Pane pane, Pane anchorPane){
+    public SelectionControl(TextField textField, Pane pane2D, Pane pane3D, CheckMenuItem animatedSelection){
         this.sequenceField = textField;
-        this.secondaryPane = pane;
-        this.structurePane = anchorPane;
-
-        /*
-        this.sequenceField.selectedTextProperty().addListener(observable -> {
-            this.anchorPosition = this.sequenceField.getAnchor();
-            this.caretPosition = this.sequenceField.getCaretPosition();
-        });
-        */
-
-
+        this.secondaryPane = pane2D;
+        this.structurePane = pane3D;
+        this.animatedSelection = animatedSelection;
     }
 
     /**
@@ -99,16 +96,27 @@ public class SelectionControl {
             model2.clearSelection();
             nucleotides[index].switchOff();
             nodes[index].switchOff();
-            this.sequenceField.deselect();
+            //this.sequenceField.deselect();
+            nucleotideLetters[index].setFill(Color.BLACK);
+            nucleotideLetters[index].setUnderline(false);
+
         }
         else {
             model1.select(index);
             model2.select(index);
-            nucleotides[index].switchOn();
-            nodes[index].switchOn();
+            if (this.animatedSelection.isSelected()) {
+                nucleotides[index].switchOn();
+                nodes[index].switchOn();
+            } else {
+                nucleotides[index].switchOnStatic();
+                nodes[index].switchOnStatic();
+            }
+
             this.anchorPosition = index;
             this.caretPosition = index+1;
-            this.sequenceField.selectRange(anchorPosition, caretPosition);
+            //this.sequenceField.selectRange(anchorPosition, caretPosition);
+            nucleotideLetters[index].setFill(Color.MAGENTA);
+            nucleotideLetters[index].setUnderline(true);
         }
     }
 
@@ -123,8 +131,16 @@ public class SelectionControl {
 
             model3D.select(i);
             model2D.select(i);
-            nucleotides[i].switchOn();
-            nodes[i].switchOn();
+            if (this.animatedSelection.isSelected()) {
+                nucleotides[i].switchOn();
+                nodes[i].switchOn();
+            }
+            else {
+                nucleotides[i].switchOnStatic();
+                nodes[i].switchOnStatic();
+            }
+            nucleotideLetters[i].setFill(Color.MAGENTA);
+            nucleotideLetters[i].setUnderline(true);
         }
 
 
@@ -141,6 +157,10 @@ public class SelectionControl {
         }
         for (Node n : nodes){
             n.switchOff();
+        }
+        for (Text t : nucleotideLetters){
+            t.setFill(Color.BLACK);
+            t.setUnderline(false);
         }
     }
 
@@ -173,5 +193,13 @@ public class SelectionControl {
 
     public void setSelectedItems(ArrayList<Integer> selectedItems) {
         this.selectedItems = selectedItems;
+    }
+
+    public Text[] getNucleotideLetters() {
+        return nucleotideLetters;
+    }
+
+    public void setNucleotideLetters(Text[] nucleotideLetters) {
+        this.nucleotideLetters = nucleotideLetters;
     }
 }

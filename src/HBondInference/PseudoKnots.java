@@ -14,7 +14,8 @@ public class PseudoKnots {
      * @return
      */
     public static void deletePseudoKnots(HBondBuilder[] hBondBuilders, StringBuilder dotBracket){
-
+        //Compare all HBondBuilders with each other and set cubic brackets if
+        //Pseudoknot is detected
         for (HBondBuilder builderA : hBondBuilders){
             for (HBondBuilder builderB : hBondBuilders){
                 if (builderA.getOwnIndex() < builderB.getOwnIndex()
@@ -22,14 +23,12 @@ public class PseudoKnots {
                         && builderA.getPartnerIndex() < builderB.getPartnerIndex()){
                     dotBracket.setCharAt(builderA.getOwnIndex(), '[');
                     dotBracket.setCharAt(builderA.getPartnerIndex(), ']');
-                    System.out.println("Pseudoknot deteced.");
                 }
                 else if (builderB.getOwnIndex() < builderA.getOwnIndex()
                         && builderB.getPartnerIndex() > builderA.getOwnIndex()
                         && builderB.getPartnerIndex() < builderA.getPartnerIndex()){
                     dotBracket.setCharAt(builderB.getOwnIndex(), '[');
                     dotBracket.setCharAt(builderB.getPartnerIndex(), ']');
-                    System.out.println("Pseudoknot detected");
                 }
             }
         }

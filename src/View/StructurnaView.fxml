@@ -32,6 +32,7 @@
           </Menu>
             <Menu fx:id="viewMenu" mnemonicParsing="false" text="View">
                <items>
+                  <CheckMenuItem fx:id="animatedSelectionBox" mnemonicParsing="false" selected="true" text="Animated selection" />
                   <Menu fx:id="backgroundColor" mnemonicParsing="false" text="Background Color">
                     <items>
                         <MenuItem fx:id="backgroundWhite" mnemonicParsing="false" onAction="#setWhiteBackground" text="White" />
@@ -50,7 +51,7 @@
             <InnerShadow color="#000000d9" />
          </effect>
       </MenuBar>
-      <TextField fx:id="sequenceField" editable="false" style="-fx-highlight-fill: rgba(3, 3, 7, 0.58); -fx-highlight-text-fill: #6dee62;" />
+      <TextFlow fx:id="sequenceTextField" style="-fx-highlight-fill: rgba(3, 3, 7, 0.58); -fx-highlight-text-fill: #6dee62;" />
       <SplitPane fx:id="vertSplitPane" dividerPositions="0.6416337285902504" VBox.vgrow="ALWAYS">
          <items>
             <Pane fx:id="structurePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: black;">
@@ -66,6 +67,11 @@
                            <font>
                               <Font name="MS Reference Sans Serif" size="12.0" />
                            </font></TextArea>
+                        <ProgressIndicator fx:id="progressIndicator" layoutX="184.0" layoutY="14.0" prefHeight="68.0" prefWidth="60.0" progress="0.0" visible="false">
+                           <effect>
+                              <Reflection />
+                           </effect>
+                        </ProgressIndicator>
                      </children>
                   </AnchorPane>
                   <Pane fx:id="secondaryStructure" style="-fx-background-color: black;" />

@@ -43,9 +43,16 @@ public class MoleculeAssembler {
     public MoleculeMesh[] getNucleotides() {        return nucleotides;    }
     public void setNucleotides(MoleculeMesh[] nucleotides) {        this.nucleotides = nucleotides;    }
 
+    //MeshView for all ribose molecules
+    MoleculeMesh[] riboses;
+
     ArrayList<Cylinder> hbonds = new ArrayList<>();
     ArrayList<Sphere> hBondAtoms = new ArrayList<>();
     ArrayList<Cylinder> hBondAtomConnections = new ArrayList<>();
+    ArrayList<Sphere> phosphateAtoms = new ArrayList<>();
+    ArrayList<Cylinder> phosphateConnections = new ArrayList<>();
+    ArrayList<Cylinder> sugarConnections = new ArrayList<>();
+    ArrayList<Sphere> structureAtoms = new ArrayList<>();
 
 
     //Array of all atoms
@@ -62,38 +69,13 @@ public class MoleculeAssembler {
         this.sequenceLength = sequenceLength;
     }
 
-    /*
-    BALL AND STICK MODEL CURRENTLY NOT WORKING
-     */
-    public void assembleBallAndStickModel(){
-        int residueNumber = atoms[0].getResidueNumber();
-
-        Guanine guanine = new Guanine();
-
-        for (Atom a : atoms) {
-            if (a.getResidueNumber() == residueNumber && (!a.equals(atoms[atoms.length - 1]))) {
-                if (a.getBase().equals("G")) guanine.setAtom(a);
-            }
-            /*guanine.makeAtomConnections();
-            for (Cylinder c : guanine.getAtomConnections()){
-                structureGroup.getChildren().add(c);
-            }*/
-            for (Sphere s : guanine.getAtomList()){
-                structureGroup.getChildren().add(s);
-            }
-            residueNumber = a.getResidueNumber();
-
-
-        }
-
-    }
 
     /**
      * For every molecule in the PDB file make a shape and add it
      * to the group
      * Returns the group with all molecules in it
      */
-    public void assembleMolecules(){
+    public void assembleMoleculesWithGroup(){
 
         //Set up array for selection model
         nucleotides = new MoleculeMesh[this.sequenceLength];
@@ -236,9 +218,6 @@ public class MoleculeAssembler {
                 ribose.fillCoordinates(atom);
             }
         }
-        //HydrogonBonds hydrogonBonds = new HydrogonBonds(sequenceLength);
-        //hydrogonBonds.inferHydrogenBonds(this.atoms);
-        //ArrayList<Cylinder> hbonds = hydrogonBonds.getHbonds();
         for (Cylinder cylinder : hbonds){
             structureGroup.getChildren().add(cylinder);
         }
@@ -248,6 +227,153 @@ public class MoleculeAssembler {
         for (Cylinder c : hBondAtomConnections){
             structureGroup.getChildren().add(c);
         }
+
+    }
+
+
+    /**
+     * For every molecule in the PDB file make a shape and add it
+     * to the group
+     * Returns the group with all molecules in it
+     */
+    public void assembleMolecules(){
+
+        //Set up array for selection model
+        nucleotides = new MoleculeMesh[this.sequenceLength];
+        riboses = new MoleculeMesh[this.sequenceLength];
+
+
+        //Initialize every residue
+        Guanine guanine = new Guanine();
+        Adenine adenine = new Adenine();
+        Cytosine cytosine = new Cytosine();
+        Uracil uracil = new Uracil();
+        Ribose ribose = new Ribose();
+
+        //Starting values
+        String currentBase = atoms[0].getBase();
+        int resdiueNumber = atoms[0].getResidueNumber();
+        int counter = 0;
+        Point3D origin = null;
+        /*
+        Create spheres for every phosphate atom and add them to structure
+        Add connections between the phosphates and add them as well
+         */
+        for (Atom atom : atoms) {
+            if (atom.getElement().equals("P")){
+                Phosphate phosphate = new Phosphate();
+                //Install tooltip
+                Tooltip tooltip = new Tooltip(atom.getBase() + atom.getResidueNumber());
+                tooltip.install(phosphate, tooltip);
+                //position the phosphate and add it to structureGroup
+                phosphate.setTranslateX(atom.getCoordinates()[0]);
+                phosphate.setTranslateY(atom.getCoordinates()[1]);
+                phosphate.setTranslateZ(atom.getCoordinates()[2]);
+                phosphateAtoms.add(phosphate);
+
+                //Make connection
+                if (counter >= 1){
+                    Point3D target = atom.getPoint();
+                    Cylinder cylinder = createConnection(origin, target);
+                    phosphateConnections.add(cylinder);
+                }
+                //update variables
+                origin = atom.getPoint();
+                counter++;
+            }
+        }
+
+        //Connect all phosphates with sugars
+        connectPhosphatesWithSugars(atoms);
+
+        //Connect all bases with sugars
+        connectBasesWithSugars(atoms);
+        counter = 0;
+        /*
+        CREATE MESH VIEWS FOR ALL BASES AND SUGARS
+         */
+        for (Atom atom : atoms) {
+            //If Atom is part of the structure, make a Sphere representation and add it to the Structure group
+            if (atom.isPartOfStructure()) {
+                structureAtoms.add(atom.getAtomSphere());}
+
+            //Check if base has changed or if last element is reached
+            //If not, add coordinates of each atom to the corresponding base
+            if (atom.getResidueNumber() == resdiueNumber && (!atom.equals(atoms[atoms.length-1]))){
+                cytosine.fillCoordinates(atom);
+                adenine.fillCoordinates(atom);
+                guanine.fillCoordinates(atom);
+                uracil.fillCoordinates(atom);
+                ribose.fillCoordinates(atom);
+            } else{
+                //NEW BASE REACHED OR EOF
+                //Add the right base to the view
+                //Make Tooltips, set Materials
+                switch (currentBase){
+                    case "CYT":
+                    case "CCC":
+                    case "C":
+                        cytosine.setMaterial(cytosineMaterial);
+                        ribose.setMaterial(cytosineMaterial);
+                        cytosine.makeMesh();
+                        nucleotides[counter] = cytosine.getMeshView() ;
+                        cytosine.makeTooltip(currentBase + Integer.toString(counter+1));
+                        ribose.makeTooltip(currentBase + Integer.toString(counter+1));
+                        cytosine = new Cytosine();
+                        break;
+                    case "GUA":
+                    case "GGG":
+                    case "G":
+                        guanine.setMaterial(guanineMaterial);
+                        ribose.setMaterial(guanineMaterial);
+                        guanine.makeMesh();
+                        nucleotides[counter] = guanine.getMeshView();
+                        guanine.makeTooltip(currentBase + Integer.toString(counter+1));
+                        ribose.makeTooltip(currentBase + Integer.toString(counter+1));
+                        guanine = new Guanine();
+                        break;
+                    case "URA":
+                    case "UUU":
+                    case "U":
+                        uracil.setMaterial(uracilMaterial);
+                        ribose.setMaterial(uracilMaterial);
+                        uracil.makeMesh();
+                        nucleotides[counter] = uracil.getMeshView();
+                        ribose.makeTooltip(currentBase + Integer.toString(counter+1));
+                        uracil.makeTooltip(currentBase + Integer.toString(counter+1));
+                        uracil = new Uracil();
+                        break;
+                    case "ADE":
+                    case "AAA":
+                    case "A":
+                        adenine.setMaterial(adenineMaterial);
+                        ribose.setMaterial(adenineMaterial);
+                        adenine.makeMesh();
+                        nucleotides[counter] = adenine.getMeshView();
+                        ribose.makeTooltip(currentBase + Integer.toString(counter+1));
+                        adenine.makeTooltip(currentBase + Integer.toString(counter+1));
+                        adenine = new Adenine();
+                        break;
+                    default: break;
+                }
+
+                //Make Mesh for ribose
+                ribose.makeMesh();
+                riboses[counter] = ribose.getMeshView();
+
+                //Update values and bases
+                counter++;
+                ribose = new Ribose();
+                currentBase = atom.getBase();
+                resdiueNumber = atom.getResidueNumber();
+                cytosine.fillCoordinates(atom);
+                adenine.fillCoordinates(atom);
+                guanine.fillCoordinates(atom);
+                uracil.fillCoordinates(atom);
+                ribose.fillCoordinates(atom);
+            }
+        }
+
     }
 
     /**
@@ -289,12 +415,15 @@ Connect all Phosphates with the right sugars
             //If new residue is reached, make connections
             if (atom.getResidueNumber() > residueNumber && residueNumber > 2){
                 cylinder = createSugarConnection(phosphate, cFifePrime);
-                this.structureGroup.getChildren().add(cylinder);
+                //this.structureGroup.getChildren().add(cylinder);
+                phosphateConnections.add(cylinder);
                 cylinder = createSugarConnection(cFifePrime, cFourPrime);
-                this.structureGroup.getChildren().add(cylinder);
+                //this.structureGroup.getChildren().add(cylinder);
+                phosphateConnections.add(cylinder);
                 if (cThreePrimeOld != null) {
                     cylinder = createSugarConnection(cThreePrimeOld, phosphate);
-                    this.structureGroup.getChildren().add(cylinder);
+                    //this.structureGroup.getChildren().add(cylinder);
+                    phosphateConnections.add(cylinder);
                 }
             }
             //Save necessary 3D points of atoms that are connected
@@ -362,7 +491,8 @@ Connect all Phosphates with the right sugars
                         System.out.println("No matching residue type");
                         break;
                 }
-                this.structureGroup.getChildren().add(cylinder);
+                //this.structureGroup.getChildren().add(cylinder);
+                sugarConnections.add(cylinder);
             }
             switch (atom.getIdentity()){
                 case "C1'":
@@ -407,7 +537,9 @@ Connect all Phosphates with the right sugars
     }
 
 
-
+    /*
+    GETTER AND SETTER
+     */
     public PhongMaterial getAdenineMaterial() {
         return adenineMaterial;
     }
@@ -462,5 +594,41 @@ Connect all Phosphates with the right sugars
 
     public void setHbonds(ArrayList<Cylinder> hbonds) {
         this.hbonds = hbonds;
+    }
+
+    public MoleculeMesh[] getRiboses() {        return riboses;    }
+
+    public void setRiboses(MoleculeMesh[] riboses) {        this.riboses = riboses;    }
+
+    public ArrayList<Sphere> getPhosphateAtoms() {
+        return phosphateAtoms;
+    }
+
+    public void setPhosphateAtoms(ArrayList<Sphere> phosphateAtoms) {
+        this.phosphateAtoms = phosphateAtoms;
+    }
+
+    public ArrayList<Cylinder> getPhosphateConnections() {
+        return phosphateConnections;
+    }
+
+    public void setPhosphateConnections(ArrayList<Cylinder> phosphateConnections) {
+        this.phosphateConnections = phosphateConnections;
+    }
+
+    public ArrayList<Cylinder> getSugarConnections() {
+        return sugarConnections;
+    }
+
+    public void setSugarConnections(ArrayList<Cylinder> sugarConnections) {
+        this.sugarConnections = sugarConnections;
+    }
+
+    public ArrayList<Sphere> getStructureAtoms() {
+        return structureAtoms;
+    }
+
+    public void setStructureAtoms(ArrayList<Sphere> structureAtoms) {
+        this.structureAtoms = structureAtoms;
     }
 }
