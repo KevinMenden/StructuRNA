@@ -195,6 +195,7 @@ public class Controller {
     @FXML
     void center(ActionEvent event) {
         presenter3D.centerStructure();
+        vdwSurfaceAssembler.centerStructure();
     }
 
     //Color each nucleotide
@@ -222,6 +223,7 @@ public class Controller {
             structurePane.getChildren().clear();
             secondaryStructure.getChildren().clear();
             console.setText(console.getText() + "\n> Structure deleted.");
+            sequenceTextField.getChildren().clear();
         }
     }
 
@@ -329,6 +331,8 @@ public class Controller {
     void makeSurface(ActionEvent event) {
         if (fileLoaded){
             structurePane.getChildren().clear();
+            vdwSurfaceAssembler.centerStructure();
+            vdwSurfaceAssembler.updateTransitions(presenter3D.cameraRotateX, presenter3D.cameraRotateY, presenter3D.cameraTranslate, presenter3D.structureGroup);
             structurePane.getChildren().add(vdwSurfaceAssembler.getSurfaceSubScene());
             vdwSurfaceAssembler.switchOnMouseHandling();
         }
@@ -340,6 +344,7 @@ public class Controller {
     void hideSurface(ActionEvent event) {
         if (fileLoaded){
             structurePane.getChildren().clear();
+            presenter3D.updateTransitions(vdwSurfaceAssembler.cameraRotateX, vdwSurfaceAssembler.cameraRotateY, vdwSurfaceAssembler.cameraTranslate, vdwSurfaceAssembler.getSurfaceGroup());
             structurePane.getChildren().add(presenter3D.subScene);
             presenter3D.switchOnMouseHandling();
         }

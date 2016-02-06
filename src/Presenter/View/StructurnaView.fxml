@@ -89,7 +89,10 @@
                         </ProgressIndicator>
                      </children>
                   </AnchorPane>
-                  <Pane fx:id="secondaryStructure" style="-fx-background-color: black;" />
+                  <Pane fx:id="secondaryStructure" style="-fx-background-color: black;">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor></Pane>
               </items>
             </SplitPane>
          </items>

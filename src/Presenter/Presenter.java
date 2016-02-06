@@ -76,6 +76,7 @@ public class Presenter {
      * Set up a 2D Structure and add it to the secondary structure pane
      */
     public void setUp2DStructure(String dotBracket){
+        presenter2D.setSecondaryPane(secondaryStructurePane);
         presenter2D.setSequence(sequence);
         presenter2D.buildSecondaryStructureGraph(dotBracket);
         secondaryStructurePane.getChildren().clear();

@@ -9,6 +9,7 @@ import javafx.animation.Timeline;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
@@ -23,6 +24,7 @@ public class Presenter2D {
     //Graph Model and Group for 2D representation
     private Graph graphModel = new Graph();
     private Group graphGroup = new Group();
+    private Pane secondaryPane;
 
     //RNA sequence
     private String sequence;
@@ -134,12 +136,12 @@ public class Presenter2D {
     Enable draggin of the secondary structure over the scene
      */
     private void addMouseHandling(){
-        this.graphGroup.setOnMousePressed(event -> {
+        this.secondaryPane.setOnMousePressed(event -> {
             originalMouseX = event.getSceneX();
             originalMouseY = event.getSceneY();
         });
 
-        this.graphGroup.setOnMouseDragged(event -> {
+        this.secondaryPane.setOnMouseDragged(event -> {
 
             double dX = event.getSceneX() - originalMouseX;
             double dY = event.getSceneY() - originalMouseY;
@@ -307,5 +309,13 @@ public class Presenter2D {
             count++;
         }
         return coordinates;
+    }
+
+    public Pane getSecondaryPane() {
+        return secondaryPane;
+    }
+
+    public void setSecondaryPane(Pane secondaryPane) {
+        this.secondaryPane = secondaryPane;
     }
 }

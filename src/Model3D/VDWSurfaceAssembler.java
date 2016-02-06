@@ -63,7 +63,7 @@ public class VDWSurfaceAssembler {
     public SubScene addVanDerWaalsSurface(Atom[] atoms){
 
         Sphere sphere;
-
+        surfaceAtoms = new ArrayList<Sphere>();
         surfaceGroup = new Group();
 
         for (Atom atom : atoms){
@@ -131,8 +131,31 @@ public class VDWSurfaceAssembler {
 
     }
 
+    //Add mouse handling
     public void switchOnMouseHandling(){
         MousHandler3D.addMouseHandler(structurePane, surfaceGroup, cameraRotateX, cameraRotateY, cameraTranslate);
+    }
+
+    /*
+Bring structure back to center
+ */
+    public void centerStructure(){
+        cameraTranslate.setZ(CAMERA_CENTER_Z);
+        cameraRotateX.setAngle(0);
+        cameraRotateY.setAngle(0);
+        surfaceGroup.setTranslateX(0);
+        surfaceGroup.setTranslateY(0);
+    }
+
+    /*
+Update Transitions if switching form Structure view to Surface view
+ */
+    public void updateTransitions(Rotate cameraRotateX, Rotate cameraRotateY, Translate cameraTranslate, Group group){
+        this.cameraRotateX.setAngle(cameraRotateX.getAngle());
+        this.cameraRotateY.setAngle(cameraRotateY.getAngle());
+        this.cameraTranslate.setZ(cameraTranslate.getZ());
+        this.surfaceGroup.setTranslateX(group.getTranslateX());
+        this.surfaceGroup.setTranslateY(group.getTranslateY());
     }
 
 

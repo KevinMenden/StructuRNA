@@ -211,4 +211,15 @@ public class Presenter3D {
         MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
     }
 
+    /*
+    Update Transitions if switching form Surface view to Structure view
+     */
+    public void updateTransitions(Rotate cameraRotateX, Rotate cameraRotateY, Translate cameraTranslate, Group group){
+        this.cameraRotateX.setAngle(cameraRotateX.getAngle());
+        this.cameraRotateY.setAngle(cameraRotateY.getAngle());
+        this.cameraTranslate.setZ(cameraTranslate.getZ());
+        this.structureGroup.setTranslateX(group.getTranslateX());
+        this.structureGroup.setTranslateY(group.getTranslateY());
+    }
+
 }
