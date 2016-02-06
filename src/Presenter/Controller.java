@@ -5,6 +5,7 @@ import Concurrent.MoleculeAssemblerService;
 import HBondInference.HydrogonBonds;
 import Model2D.Nussinov;
 import Model3D.MoleculeAssembler;
+import Model3D.VDWSurfaceAssembler;
 import Selection.SelectionControl;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -19,22 +20,35 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.io.SyncFailedException;
 
+/*
+This class controls all the GUI elements of the FXML view
+It uses Presenter, Presenter2D and Presenter3D to control the structures
+SelectionControl is used for monitoring selection of structure elements
+
+The computational intensive tasks of hydrogen bond inference and
+structure composition are delegated to different threads, to keep
+the GUI responsive and improve performance (allows multi-core computing)
+ */
 public class Controller {
 
     /*
     The Presenter instances that hold all methods and models
      */
 
-    private Presenter presenter;// = new Presenter();
+    private Presenter presenter;
     private Presenter2D presenter2D;
-    private Presenter3D presenter3D;// = new Presenter3D();
+    private Presenter3D presenter3D;
     private HydrogonBonds hydrogonBonds;
     private SelectionControl selectionControl;
     private boolean fileLoaded = false;
 
     private HydrogenBondService hydrogenBondService;
+    private MoleculeAssemblerService moleculeAssemblerService;
+    private MoleculeAssembler moleculeAssembler;
     private Text[] nucleotideLetters;
+    private VDWSurfaceAssembler vdwSurfaceAssembler;
 
     @FXML
     private MenuItem colorNucleotide;
@@ -84,6 +98,16 @@ public class Controller {
     private TextFlow sequenceTextField;
     @FXML
     private CheckMenuItem animatedSelectionBox;
+    @FXML
+    private Slider slider2DScale;
+    @FXML
+    private MenuItem menuItemSize2D;
+    @FXML
+    private Menu sizeMenu;
+    @FXML
+    private MenuItem surfaceMenu;
+    @FXML
+    private MenuItem hideSurfaceMenu;
 
 
     /**
@@ -99,16 +123,13 @@ public class Controller {
             //If file is .pdb file, load it
             if (selectedFile.getAbsolutePath().endsWith(".pdb")) {
                 this.presenter.loadFile(selectedFile.getAbsolutePath());
-                showInfo("Loading file " + selectedFile.getName());
-
-                System.out.println("Processors: " + Runtime.getRuntime().availableProcessors());
+                showInfo("Loading file " + selectedFile.getName() + " ...");
 
                 //Set the sequence to the textfield
                 this.nucleotideLetters = makeNucleotideTextObjects(presenter.getSequence());
                 sequenceTextField.getChildren().clear();
                 sequenceTextField.getChildren().addAll(nucleotideLetters);
                 selectionControl.setNucleotideLetters(nucleotideLetters);
-                //sequenceField.setText(presenter.getSequence());
 
                 //Use differen Threads to calculate hydrogen bonds and set up all structure elements
                 hydrogenBondService.reset();
@@ -117,12 +138,14 @@ public class Controller {
                 hydrogenBondService.start();
                 progressIndicator.setVisible(true);
                 progressIndicator.progressProperty().bind(hydrogenBondService.progressProperty());
-                MoleculeAssemblerService moleculeAssemblerService = new MoleculeAssemblerService(presenter.getAtoms(), presenter.getSequence().length());
+                moleculeAssemblerService = new MoleculeAssemblerService(presenter.getAtoms(), presenter.getSequence().length());
                 moleculeAssemblerService.start();
 
                 //If molecules are assembled, put all parts together and put them on the scene
+                //Note: molecule assembling takes approx. 3 times as long as hydrogen bonds inference (measured for different molecule sizes)
                 moleculeAssemblerService.setOnSucceeded(event2 -> {
-                    presenter.putStructureOnScene(moleculeAssemblerService.getMoleculeAssembler(), hydrogonBonds);
+                    this.moleculeAssembler = moleculeAssemblerService.getMoleculeAssembler();
+                    presenter.putStructureOnScene(this.moleculeAssembler, hydrogonBonds);
                     presenter.getPresenter3D().centerStructure();
 
                     if (hydrogonBonds.isValidDotBracketNotation(hydrogonBonds.getDotBracket())) {
@@ -138,6 +161,17 @@ public class Controller {
                     //With all objects produced, initialize SelectionModels
                     selectionControl.initSelectionModel(moleculeAssemblerService.getMoleculeAssembler().getNucleotides(), presenter2D.getNodes());
                     showInfo(selectedFile.getName() + " loaded succesfully!");
+                    //Set up slider for 2D scale
+                    slider2DScale.setValue(1.0);
+                    slider2DScale.valueProperty().addListener((observable, oldValue, newValue) -> {
+                        if (slider2DScale.isValueChanging()) {
+                            presenter2D.getGraphGroup().setScaleX(slider2DScale.getValue());
+                            presenter2D.getGraphGroup().setScaleY(slider2DScale.getValue());
+                        }
+                    });
+
+                    //After molecule has loaded, make the Van der Waals surface for later usage
+                    vdwSurfaceAssembler.addVanDerWaalsSurface(presenter.getAtoms());
 
                     this.fileLoaded = true;
                     progressIndicator.setVisible(false);
@@ -148,11 +182,11 @@ public class Controller {
             }
 
         }catch (NullPointerException np){
-            //console.setText(console.getText() + "\n> " + "No file selected.");
-            np.printStackTrace();
+            showInfo(np.getMessage() +  " thrown while file loading.");
+            //np.printStackTrace();
         }
         catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
             showInfo(e.getCause() + " caught during file loading." + e.getMessage());
         }
     }
@@ -167,9 +201,7 @@ public class Controller {
     @FXML
     void colorByNucleotide(ActionEvent event) {
         if (fileLoaded) {
-            presenter3D.colorByNucleotide();
-            structurePane.getChildren().clear();
-            structurePane.getChildren().addAll(presenter3D.subScene);
+            moleculeAssembler.colorByNucleotide();
         }
         else showInfo("No file loaded");
     }
@@ -178,9 +210,7 @@ public class Controller {
     @FXML
     void colorByBasetype(ActionEvent event) {
         if (fileLoaded) {
-            presenter3D.colorByBasetype();
-            structurePane.getChildren().clear();
-            structurePane.getChildren().addAll(presenter3D.subScene);
+            moleculeAssembler.colorByBasetype();
         }
         else showInfo("No file loaded");
     }
@@ -202,12 +232,15 @@ public class Controller {
         alert.setTitle("About StructuRNA");
         alert.setHeaderText("How to use StructuRNA");
         alert.setContentText(
-                "StructuRNA can show RNA molecules that are in the PDB file format. " +
+                "This Program was written as project in the course Advanced Java for " +
+                        "Bioinformatics, taught by Prof Dr. Daniel Huson and Ania Gorska " +
+                        "from Tuebingen University. " +
+                        "StructuRNA can show RNA molecules that are in the PDB file format. " +
                         "If the structure includes H-molecules, StructuRNA will try to infer hydrogen bonds. " +
                         "Otherwise, the Nussinov algorithm will be used to compute a secondary structure " +
                         "approximation.\n\n" +
                         "You can zoom into the molecule by holding Shift and dragging the mouse up and down. " +
-                        "The molecule can be rotated be holding the mouse and dragging it over the screen. " +
+                        "The molecule can be rotated by holding the mouse and dragging it over the screen. " +
                         "You can also drag the molecule over the screen when Alt is pressed.\n\n" +
                         "Specific nucleotides can be selected by clicking on them. The selection is then visible " +
                         "in both the 3D and 2D structure.\n\n" +
@@ -222,11 +255,13 @@ public class Controller {
     @FXML
     void setWhiteBackground(ActionEvent event) {
         presenter3D.subScene.setFill(Color.WHITE);
+        vdwSurfaceAssembler.getSurfaceSubScene().setFill(Color.WHITE);
     }
     //Color the background black
     @FXML
     void setBlackBackground(ActionEvent event) {
         presenter3D.subScene.setFill(Color.BLACK);
+        vdwSurfaceAssembler.getSurfaceSubScene().setFill(Color.BLACK);
     }
 
     /*
@@ -244,8 +279,6 @@ public class Controller {
         if (fileLoaded)
         selectionControl.clearSelection();
     }
-
-
 
 
     @FXML
@@ -271,6 +304,9 @@ public class Controller {
 
         hydrogenBondService = new HydrogenBondService();
 
+        vdwSurfaceAssembler = new VDWSurfaceAssembler();
+        vdwSurfaceAssembler.setStructurePane(structurePane);
+
     }
 
     //Updates text in the console
@@ -286,6 +322,27 @@ public class Controller {
             texts[i] = new Text(String.valueOf(sequence.charAt(i)));
         }
         return texts;
+    }
+
+    //Show the Van der Waals surface
+    @FXML
+    void makeSurface(ActionEvent event) {
+        if (fileLoaded){
+            structurePane.getChildren().clear();
+            structurePane.getChildren().add(vdwSurfaceAssembler.getSurfaceSubScene());
+            vdwSurfaceAssembler.switchOnMouseHandling();
+        }
+
+    }
+
+    //Hide Van der Waals surface, show molecule structure
+    @FXML
+    void hideSurface(ActionEvent event) {
+        if (fileLoaded){
+            structurePane.getChildren().clear();
+            structurePane.getChildren().add(presenter3D.subScene);
+            presenter3D.switchOnMouseHandling();
+        }
     }
 
 

@@ -113,6 +113,10 @@ public class Presenter3D {
 
     }
 
+    public void switchOnMouseHandling(){
+        MousHandler3D.addMouseHandler(structurePane, structureGroup, cameraRotateX, cameraRotateY, cameraTranslate);
+    }
+
 
 
 

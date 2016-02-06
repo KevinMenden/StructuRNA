@@ -19,7 +19,7 @@ public class Main extends Application {
         primaryStage.getIcons().add(new Image(Main.class.getResourceAsStream("img/icon2.gif")));
 
         //load FXML, init stage
-        Parent root = FXMLLoader.load(getClass().getResource("../View/StructurnaView.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("View/StructurnaView.fxml"));
         primaryStage.setTitle("StructuRNA");
         Scene scene = new Scene(root, 1000, 700, true, SceneAntialiasing.BALANCED);
         primaryStage.setScene(scene);

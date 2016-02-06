@@ -62,6 +62,8 @@ public class Presenter2D {
 
         //Clear the graph group
         graphGroup.getChildren().clear();
+        graphGroup.setScaleX(1.0);
+        graphGroup.setScaleY(1.0);
 
         //Make embedding
         double[][] embedding = SpringEmbedder.computeSpringEmbedding(15, this.graphModel.getNumberOfNodes(), this.graphModel.getEdges(), null);

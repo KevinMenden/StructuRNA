@@ -23,6 +23,8 @@ public class MoleculeMesh extends MeshView {
     //Original material of the Molecule
     private PhongMaterial originalMaterial;
     private PhongMaterial startMaterial = new PhongMaterial(Color.CYAN);
+    SelectionColorTransition selectionColorTransition = new SelectionColorTransition(startMaterial, Color.CYAN, Color.BROWN, Duration.seconds(0.5));
+
 
     //Set the original material of the molecule (if changed through transitions)
     public void setOriginalMaterial(PhongMaterial originalMaterial){
@@ -45,7 +47,6 @@ public class MoleculeMesh extends MeshView {
 
     public void switchOn(){
         this.setMaterial(startMaterial);
-        SelectionColorTransition selectionColorTransition = new SelectionColorTransition(startMaterial, Color.CYAN, Color.BROWN, Duration.seconds(0.5));
         selectionColorTransition.setAutoReverse(true);
         selectionColorTransition.setCycleCount(Animation.INDEFINITE);
         selectionColorTransition.play();
@@ -58,7 +59,8 @@ public class MoleculeMesh extends MeshView {
     }
     public void switchOff(){
         this.setMaterial(originalMaterial);
-        this.timeline.stop();
+        //this.timeline.stop();
+        selectionColorTransition.stop();
         this.setScaleY(1);
         this.setScaleX(1);
     }

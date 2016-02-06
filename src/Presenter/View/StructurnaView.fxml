@@ -23,6 +23,8 @@
             <items>
                   <MenuItem fx:id="colorNucleotide" mnemonicParsing="false" onAction="#colorByNucleotide" text="Color by Nucleotide" />
                   <MenuItem fx:id="colorBasetype" mnemonicParsing="false" onAction="#colorByBasetype" text="Color by Basetype" />
+                  <MenuItem fx:id="surfaceMenu" mnemonicParsing="false" onAction="#makeSurface" text="VdW Surface" />
+                  <MenuItem fx:id="hideSurfaceMenu" mnemonicParsing="false" onAction="#hideSurface" text="Hide VdW Surface" />
                   <MenuItem fx:id="centerButton" mnemonicParsing="false" onAction="#center" text="Center" />
                   <MenuItem fx:id="menuItemHbonds" mnemonicParsing="false" onAction="#selectHbonds" text="Select Hydrogen Bonds" />
                   <MenuItem fx:id="menuClearSelection" mnemonicParsing="false" onAction="#clearSelection" text="Clear Selection" />
@@ -33,6 +35,19 @@
             <Menu fx:id="viewMenu" mnemonicParsing="false" text="View">
                <items>
                   <CheckMenuItem fx:id="animatedSelectionBox" mnemonicParsing="false" selected="true" text="Animated selection" />
+                  <Menu fx:id="sizeMenu" mnemonicParsing="false" text="2D Size">
+                    <items>
+                      <MenuItem fx:id="menuItemSize2D" mnemonicParsing="false" text="Adjust 2D Scale">
+                           <graphic>
+                              <Slider fx:id="slider2DScale" max="3.0" min="1.0" showTickLabels="true" showTickMarks="true" style="-fx-text-fill-color: black;" value="1.0">
+                                 <effect>
+                                    <Reflection />
+                                 </effect>
+                              </Slider>
+                           </graphic>
+                        </MenuItem>
+                    </items>
+                  </Menu>
                   <Menu fx:id="backgroundColor" mnemonicParsing="false" text="Background Color">
                     <items>
                         <MenuItem fx:id="backgroundWhite" mnemonicParsing="false" onAction="#setWhiteBackground" text="White" />
@@ -59,7 +74,7 @@
                   <Cursor fx:constant="HAND" />
                </cursor>
             </Pane>
-            <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="566.0" prefWidth="233.0">
+            <SplitPane dividerPositions="0.3305084745762712" orientation="VERTICAL" prefHeight="566.0" prefWidth="233.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>

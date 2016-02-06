@@ -128,6 +128,10 @@ public class SelectionControl {
         for (int i : indices){
             model2D.clearSelection();
             model3D.clearSelection();
+            nucleotides[i].switchOff();
+            nodes[i].switchOff();
+            nucleotideLetters[i].setUnderline(false);
+            nucleotideLetters[i].setFill(Color.BLACK);
 
             model3D.select(i);
             model2D.select(i);

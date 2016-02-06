@@ -16,9 +16,7 @@ public class HydrogenBondService extends Service<HydrogonBonds>{
     @Override
     protected void succeeded() {
         super.succeeded();
-        System.out.println("succeeded");
-        System.out.println(this.getProgress());
-        System.out.println(this.isRunning());
+        System.out.println("Hydrogen bonds succeeded. Time: "  + System.currentTimeMillis());
     }
 
     @Override
@@ -32,6 +30,7 @@ public class HydrogenBondService extends Service<HydrogonBonds>{
         return new Task<HydrogonBonds>() {
             @Override
             protected HydrogonBonds call() throws Exception {
+                System.out.println("Hbond inference started: " + System.currentTimeMillis());
                 hydrogonBonds.inferHydrogenBonds(atoms);
 
                 return null;

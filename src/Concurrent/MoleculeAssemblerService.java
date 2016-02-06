@@ -34,6 +34,7 @@ public class MoleculeAssemblerService extends Service {
         return new Task() {
             @Override
             protected Object call() throws Exception {
+                System.out.println("Assembling started: " + System.currentTimeMillis());
                 moleculeAssembler = new MoleculeAssembler(atoms, sequenceLength);
                 moleculeAssembler.assembleMolecules();
 
@@ -45,7 +46,7 @@ public class MoleculeAssemblerService extends Service {
     @Override
     protected void succeeded() {
         super.succeeded();
-        System.out.println("Molecule assembler succeded.");
+        System.out.println("Molecule assembler succeded. Time: " + System.currentTimeMillis());
     }
 
     /*
