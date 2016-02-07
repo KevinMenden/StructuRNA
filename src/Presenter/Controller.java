@@ -29,7 +29,8 @@ SelectionControl is used for monitoring selection of structure elements
 
 The computational intensive tasks of hydrogen bond inference and
 structure composition are delegated to different threads, to keep
-the GUI responsive and improve performance (allows multi-core computing)
+the GUI responsive (and theoreticall improve performance, however, the threads
+are not always delegated to different cores)
  */
 public class Controller {
 
@@ -144,9 +145,22 @@ public class Controller {
                 //If molecules are assembled, put all parts together and put them on the scene
                 //Note: molecule assembling takes approx. 3 times as long as hydrogen bonds inference (measured for different molecule sizes)
                 moleculeAssemblerService.setOnSucceeded(event2 -> {
-                    this.moleculeAssembler = moleculeAssemblerService.getMoleculeAssembler();
-                    presenter.putStructureOnScene(this.moleculeAssembler, hydrogonBonds);
-                    presenter.getPresenter3D().centerStructure();
+                    if (hydrogenBondService.getState() == Worker.State.SUCCEEDED) {
+                        this.moleculeAssembler = moleculeAssemblerService.getMoleculeAssembler();
+                        presenter.putStructureOnScene(this.moleculeAssembler, hydrogonBonds);
+                        presenter.getPresenter3D().centerStructure();
+                    } else {
+                        //For the unlikely case that molecule assembling was faster than hbond-inference, wait some time
+                        //Should only be possible for small molecules
+                        try {
+                            Thread.sleep(300);
+                            this.moleculeAssembler = moleculeAssemblerService.getMoleculeAssembler();
+                            presenter.putStructureOnScene(this.moleculeAssembler, hydrogonBonds);
+                            presenter.getPresenter3D().centerStructure();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                     if (hydrogonBonds.isValidDotBracketNotation(hydrogonBonds.getDotBracket())) {
                         presenter.setUp2DStructure(hydrogonBonds.getDotBracket());
@@ -256,14 +270,18 @@ public class Controller {
     //Color the background white
     @FXML
     void setWhiteBackground(ActionEvent event) {
-        presenter3D.subScene.setFill(Color.WHITE);
+        if (fileLoaded){
+            presenter3D.subScene.setFill(Color.WHITE);
         vdwSurfaceAssembler.getSurfaceSubScene().setFill(Color.WHITE);
+        }
     }
     //Color the background black
     @FXML
     void setBlackBackground(ActionEvent event) {
-        presenter3D.subScene.setFill(Color.BLACK);
-        vdwSurfaceAssembler.getSurfaceSubScene().setFill(Color.BLACK);
+        if (fileLoaded) {
+            presenter3D.subScene.setFill(Color.BLACK);
+            vdwSurfaceAssembler.getSurfaceSubScene().setFill(Color.BLACK);
+        }
     }
 
     /*
@@ -314,7 +332,7 @@ public class Controller {
     //Updates text in the console
     private void showInfo(String info){
         this.console.setText(console.getText() + "\n> " + info);
-        this.console.setScrollTop(Double.MAX_VALUE);
+        this.console.setScrollTop(Double.MIN_VALUE);
     }
 
     //Make a text object for every nucleotide for TextFlow usage
